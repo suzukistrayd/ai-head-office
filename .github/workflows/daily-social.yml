@@ -1,4 +1,4 @@
-name: Daily Social Posts
+name: Daily Social Posts (All Platforms)
 
 on:
   schedule:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  generate-daily-content:
+  generate-content:
     runs-on: ubuntu-latest
     
     steps:
@@ -20,13 +20,7 @@ jobs:
       - name: Create directories
         run: |
           mkdir -p content/drafts
-          mkdir -p content/approved
-          mkdir -p knowledge/characters/suzuki
-          mkdir -p knowledge/characters/martin-strayd
-          mkdir -p knowledge/brand
-          mkdir -p knowledge/platforms
-          mkdir -p knowledge/workflows
-      
+
       - name: Generate X Post
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
@@ -39,7 +33,8 @@ jobs:
               "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission. Witty and sharp."}, {"role": "user", "content": "Generate 1 X/Twitter post. Under 280 chars. Rock vibe. Include 2-3 hashtags. End with energy."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/x-$(date +%Y-%m-%d).txt
-      
+          cat content/drafts/x-$(date +%Y-%m-%d).txt
+
       - name: Generate Instagram Caption
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
@@ -52,7 +47,8 @@ jobs:
               "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission."}, {"role": "user", "content": "Generate 1 Instagram caption. Hook line first. 2-3 sentences. 5 relevant hashtags. End with real music. real people."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/ig-$(date +%Y-%m-%d).txt
-      
+          cat content/drafts/ig-$(date +%Y-%m-%d).txt
+
       - name: Generate TikTok Script
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
@@ -65,11 +61,40 @@ jobs:
               "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll. Witty. Short form video."}, {"role": "user", "content": "Generate 1 TikTok script. Hook first 3 seconds. Story arc. 3-5 hashtags. Under 60 seconds."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/tt-$(date +%Y-%m-%d).txt
-      
-      - name: Commit drafts
+          cat content/drafts/tt-$(date +%Y-%m-%d).txt
+
+      - name: Generate Facebook Post
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          response=$(curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll. Story-driven. Community focus."}, {"role": "user", "content": "Generate 1 Facebook post. Story-driven. Rock vibe. Include call to action. 2-4 sentences. Emoji适量."}]
+            }')
+          echo "$response" | jq -r '.choices[0].message.content' > content/drafts/fb-$(date +%Y-%m-%d).txt
+          cat content/drafts/fb-$(date +%Y-%m-%d).txt
+
+      - name: Generate YouTube Description
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          response=$(curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki for STRAYD. YouTube SEO expert. Music content."}, {"role": "user", "content": "Generate YouTube video description for STRAYD music. Include: Hook (first 150 chars), timestamps placeholder, links section, 10 SEO tags, end with real music. real people."}]
+            }')
+          echo "$response" | jq -r '.choices[0].message.content' > content/drafts/yt-$(date +%Y-%m-%d).txt
+          cat content/drafts/yt-$(date +%Y-%m-%d).txt
+
+      - name: Commit all drafts
+        run: |
+          git config user.name "Dahl AI"
+          git config user.email "dahl@strayd.com"
           git add content/drafts/
-          git commit -m "Daily content drafts $(date +%Y-%m-%d)"
-          git push
+          git commit -m "Daily content all platforms $(date +%Y-%m-%d)"
+          git push || echo "Push skipped"
