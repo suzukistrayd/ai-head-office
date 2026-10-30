@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  generate:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,61 +14,33 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Generate all posts
+      - name: Generate X with knowledge
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           mkdir -p content/drafts
           DATE=$(date +%Y-%m-%d)
           
-          echo "Generating X..."
+          # Read knowledge files
+          BRAND=$(cat knowledge/brand/strayd.md 2>/dev/null || echo "")
+          SUZUKI=$(cat characters/suzuki/-index.md 2>/dev/null || echo "")
+          MARTIN=$(cat characters/martin-strayd/-index.md 2>/dev/null || echo "")
+          
+          # Build context
+          CONTEXT="KNOWLEDGE:\n$BRAND\n$SUZUKI\n$MARTIN\n\nINSTRUCTION: Use only facts above. Do not invent information."
+          
+          # X with knowledge
           curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write 1 X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
-            > /tmp/x.json
-          python3 -c "import json; open('content/drafts/x-$DATE.md','w').write('# X\n\n' + json.load(open('/tmp/x.json'))['choices'][0]['message']['content'])"
+            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"user\",\"content\":\"$CONTEXT\n\nWrite 1 X post. Under 280 chars. Rock. 2-3 hashtags.\"}]}" \
+            | python3 -c "import sys,json; open('content/drafts/x-$DATE.md','w').write('# X Post\n\n' + json.load(sys.stdin)['choices'][0]['message']['content'])"
           
-          echo "Generating IG..."
-          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Instagram caption. Hook first. 5 hashtags."}]}' \
-            > /tmp/ig.json
-          python3 -c "import json; open('content/drafts/ig-$DATE.md','w').write('# IG\n\n' + json.load(open('/tmp/ig.json'))['choices'][0]['message']['content'])"
-          
-          echo "Generating TT (with retry)..."
-          for i in 1 2 3; do
-            curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-              -H "Authorization: Bearer $DAHL_API_KEY" \
-              -H "Content-Type: application/json" \
-              -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write TikTok script. Hook 3sec. Story. CTA."}]}' \
-              > /tmp/tt.json
-            if python3 -c "import json; json.load(open('/tmp/tt.json'))" 2>/dev/null; then
-              python3 -c "import json; open('content/drafts/tt-$DATE.md','w').write('# TT\n\n' + json.load(open('/tmp/tt.json'))['choices'][0]['message']['content'])"
-              echo "TT success"
-              break
-            else
-              echo "TT attempt $i failed, retrying..."
-              sleep 5
-            fi
-          done
-          
-          echo "Generating FB..."
-          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Facebook post. Story. Emoji. CTA."}]}' \
-            > /tmp/fb.json
-          python3 -c "import json; open('content/drafts/fb-$DATE.md','w').write('# FB\n\n' + json.load(open('/tmp/fb.json'))['choices'][0]['message']['content'])"
-          
-          echo "=== ALL DONE ==="
-          ls -la content/drafts/
+          echo "=== X created ==="
+          cat content/drafts/x-$DATE.md
 
-      - name: Commit and push
+      - name: Commit
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
-          git commit -m "Social content $(date +%Y-%m-%d)"
-          git push origin main
+          git commit -m "Daily content $DATE"
+          git push
