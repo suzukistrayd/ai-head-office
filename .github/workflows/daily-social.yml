@@ -1,4 +1,4 @@
-name: FUCK Daily Social
+name: Daily Social
 
 on:
   workflow_dispatch:
@@ -6,7 +6,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
+      - name: Setup git
+        run: |
+          git config --global user.name "bot"
+          git config --global user.email "bot@strayd.com"
+
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,8 +32,6 @@ jobs:
 
       - name: Commit
         run: |
-          git config user.name "bot"
-          git config user.email "bot@strayd.com"
           git add -A
           git commit -m "daily"
           git push origin main
