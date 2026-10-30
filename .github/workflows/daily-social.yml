@@ -1,4 +1,4 @@
-name: Daily Social Posts - Markdown Output
+name: Daily Social Posts
 
 on:
   schedule:
@@ -16,125 +16,86 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
-      
+
+      - name: Create drafts folder
+        run: mkdir -p content/drafts
+
       - name: Generate X Post
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          mkdir -p content/drafts
-          CONTENT=$(curl -s https://inference.dahl.global/v1/chat/completions \
+          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "user", "content": "You are social media manager for STRAYD featuring Martin Strayd (Australian rock musician, 55) and Suzuki (Thai-Japanese media manager, 36). Brand: Anti-Pop Rock. Message: Real music. Real people. Real lives. No waiting for permission. Style: Witty, sharp, rock and roll. NEVER invent events or releases. Generate 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Punchy."}]
-            }' | jq -r '.choices[0].message.content')
-          cat > content/drafts/x-$(date +%Y-%m-%d).md << 'EOF'
----
-platform: X (Twitter)
-date: DATE_PLACEHOLDER
-status: draft
----
-EOF
-          sed -i "s/DATE_PLACEHOLDER/$(date +%Y-%m-%d)/" content/drafts/x-$(date +%Y-%m-%d).md
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"You are social media manager for STRAYD featuring Martin Strayd (Australian rock musician, 55) and Suzuki (Thai-Japanese media manager, 36). Brand: Anti-Pop Rock. NEVER invent events. Generate 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Punchy."}]}' | jq -r '.choices[0].message.content')
+          echo "# X (Twitter) Post" > content/drafts/x-$(date +%Y-%m-%d).md
+          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/x-$(date +%Y-%m-%d).md
           echo "" >> content/drafts/x-$(date +%Y-%m-%d).md
-          echo "$CONTENT" >> content/drafts/x-$(date +%Y-%m-%d).md
-          echo "=== X POST ===" && cat content/drafts/x-$(date +%Y-%m-%d).md
+          echo "$TEXT" >> content/drafts/x-$(date +%Y-%m-%d).md
+          cat content/drafts/x-$(date +%Y-%m-%d).md
 
       - name: Generate Instagram
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          CONTENT=$(curl -s https://inference.dahl.global/v1/chat/completions \
+          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "user", "content": "STRAYD featuring Martin Strayd (Australian rock) and Suzuki (media manager). Anti-Pop Rock. NEVER invent. Generate 1 Instagram caption. Hook first, body 2-3 sentences, 5 hashtags. End with: real music. real people."}]
-            }' | jq -r '.choices[0].message.content')
-          cat > content/drafts/ig-$(date +%Y-%m-%d).md << EOF
----
-platform: Instagram
-date: $(date +%Y-%m-%d)
-status: draft
----
-
-$CONTENT
-EOF
-          echo "=== INSTAGRAM ===" && cat content/drafts/ig-$(date +%Y-%m-%d).md
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd (Australian rock) and Suzuki (media manager). Anti-Pop Rock. NEVER invent. Generate 1 Instagram caption. Hook first, body 2-3 sentences, 5 hashtags. End: real music. real people."}]}' | jq -r '.choices[0].message.content')
+          echo "# Instagram Caption" > content/drafts/ig-$(date +%Y-%m-%d).md
+          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/ig-$(date +%Y-%m-%d).md
+          echo "" >> content/drafts/ig-$(date +%Y-%m-%d).md
+          echo "$TEXT" >> content/drafts/ig-$(date +%Y-%m-%d).md
+          cat content/drafts/ig-$(date +%Y-%m-%d).md
 
       - name: Generate TikTok
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          CONTENT=$(curl -s https://inference.dahl.global/v1/chat/completions \
+          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "user", "content": "STRAYD. Martin Strayd (Australian rock, 55). Suzuki (media manager, 36). Anti-Pop Rock. NEVER invent. Generate TikTok script: Hook 3 sec, story arc 30-45 sec, ending CTA. 3-5 hashtags. Under 60 sec."}]
-            }' | jq -r '.choices[0].message.content')
-          cat > content/drafts/tt-$(date +%Y-%m-%d).md << EOF
----
-platform: TikTok
-date: $(date +%Y-%m-%d)
-status: draft
----
-
-$CONTENT
-EOF
-          echo "=== TIKTOK ===" && cat content/drafts/tt-$(date +%Y-%m-%d).md
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD. Martin Strayd (Australian rock, 55). Suzuki (media manager, 36). Anti-Pop Rock. NEVER invent. Generate TikTok script: Hook 3 sec, story arc 30-45 sec, ending CTA. 3-5 hashtags. Under 60 sec."}]}' | jq -r '.choices[0].message.content')
+          echo "# TikTok Script" > content/drafts/tt-$(date +%Y-%m-%d).md
+          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/tt-$(date +%Y-%m-%d).md
+          echo "" >> content/drafts/tt-$(date +%Y-%m-%d).md
+          echo "$TEXT" >> content/drafts/tt-$(date +%Y-%m-%d).md
+          cat content/drafts/tt-$(date +%Y-%m-%d).md
 
       - name: Generate Facebook
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          CONTENT=$(curl -s https://inference.dahl.global/v1/chat/completions \
+          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "user", "content": "STRAYD. Martin Strayd (Australian rock). Suzuki (band manager). Anti-Pop Rock. NEVER invent. Generate Facebook post: story-driven, rock vibe, 2-4 sentences, emoji, CTA. End: real music. real people."}]
-            }' | jq -r '.choices[0].message.content')
-          cat > content/drafts/fb-$(date +%Y-%m-%d).md << EOF
----
-platform: Facebook
-date: $(date +%Y-%m-%d)
-status: draft
----
-
-$CONTENT
-EOF
-          echo "=== FACEBOOK ===" && cat content/drafts/fb-$(date +%Y-%m-%d).md
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD. Martin Strayd (Australian rock). Suzuki (band manager). Anti-Pop Rock. NEVER invent. Generate Facebook post: story-driven, 2-4 sentences, emoji, CTA. End: real music. real people."}]}' | jq -r '.choices[0].message.content')
+          echo "# Facebook Post" > content/drafts/fb-$(date +%Y-%m-%d).md
+          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/fb-$(date +%Y-%m-%d).md
+          echo "" >> content/drafts/fb-$(date +%Y-%m-%d).md
+          echo "$TEXT" >> content/drafts/fb-$(date +%Y-%m-%d).md
+          cat content/drafts/fb-$(date +%Y-%m-%d).md
 
       - name: Generate YouTube
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          CONTENT=$(curl -s https://inference.dahl.global/v1/chat/completions \
+          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "user", "content": "STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock. NEVER invent. Generate YouTube description: Hook 150 chars, description 2-3 paragraphs, timestamps placeholder, links section, 10 SEO tags. End: real music. real people. real stories."}]
-            }' | jq -r '.choices[0].message.content')
-          cat > content/drafts/yt-$(date +%Y-%m-%d).md << EOF
----
-platform: YouTube
-date: $(date +%Y-%m-%d)
-status: draft
----
-
-$CONTENT
-EOF
-          echo "=== YOUTUBE ===" && cat content/drafts/yt-$(date +%Y-%m-%d).md
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock. NEVER invent. Generate YouTube description: Hook 150 chars, description 2-3 paragraphs, timestamps, links, 10 SEO tags. End: real music. real people. real stories."}]}' | jq -r '.choices[0].message.content')
+          echo "# YouTube Description" > content/drafts/yt-$(date +%Y-%m-%d).md
+          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/yt-$(date +%Y-%m-%d).md
+          echo "" >> content/drafts/yt-$(date +%Y-%m-%d).md
+          echo "$TEXT" >> content/drafts/yt-$(date +%Y-%m-%d).md
+          cat content/drafts/yt-$(date +%Y-%m-%d).md
 
       - name: Show all files
         run: |
-          echo "=== ALL DRAFT FILES ==="
+          echo "=== FILES CREATED ==="
           ls -la content/drafts/
           echo ""
-          echo "=== VIEW ON GITHUB ==="
+          echo "=== VIEW AT ==="
           echo "https://github.com/suzukistrayd/ai-head-office/tree/main/content/drafts"
 
       - name: Commit and push
@@ -142,5 +103,5 @@ EOF
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
-          git commit -m "Daily social content $(date +%Y-%m-%d)" || echo "No changes"
-          git push || echo "Push done"
+          git commit -m "Daily social content $(date +%Y-%m-%d)"
+          git push origin main
