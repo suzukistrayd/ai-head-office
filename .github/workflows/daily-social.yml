@@ -1,41 +1,62 @@
-# .github/workflows/daily-social.yml
-
 name: Daily Social Posts
 
 on:
   schedule:
-    - cron: '0 18 * * *'  # 6pm daily
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 18 * * *'
+  workflow_dispatch:
 
 jobs:
-  generate-content:
+  generate-daily-content:
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
       
-      - name: Generate X Post
+      - name: Create directories
         run: |
-          curl https://inference.dahl.global/v1/chat/completions \
-          -H "Authorization: Bearer ${{ secrets.DAHL_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "model": "MiniMaxAI/MiniMax-M2.7",
-            "messages": [{"role": "user", "content": "Generate 1 X/Twitter post for Suzuki (STRAYD). Rock and roll attitude. Anti-pop. Include hashtags. Keep under 280 chars. Real music. Real people."}]
-          }' >> content/drafts/x-draft.txt
+          mkdir -p content/drafts
+          mkdir -p content/approved
       
-      - name: Generate IG Caption
+      - name: Generate X Post
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          curl https://inference.dahl.global/v1/chat/completions \
-          -H "Authorization: Bearer ${{ secrets.DAHL_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "model": "MiniMaxAI/MiniMax-M2.7",
-            "messages": [{"role": "user", "content": "Generate 1 Instagram caption for Suzuki. Witty. Rock vibe. Include 5 hashtags. End with real music. real people."}]
-          }' >> content/drafts/ig-draft.txt
+          curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission. Witty and sharp."}, {"role": "user", "content": "Generate 1 X/Twitter post. Under 280 chars. Rock vibe. Include 2-3 hashtags. End with energy."}]
+            }' | jq -r '.choices[0].message.content' > content/drafts/x-$(date +%Y-%m-%d).txt
+      
+      - name: Generate Instagram Caption
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission."}, {"role": "user", "content": "Generate 1 Instagram caption. Hook line first. 2-3 sentences. 5 relevant hashtags. End with real music. real people."}]
+            }' | jq -r '.choices[0].message.content' > content/drafts/ig-$(date +%Y-%m-%d).txt
+      
+      - name: Generate TikTok Script
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll. Witty. Short form video."}, {"role": "user", "content": "Generate 1 TikTok script. Hook first 3 seconds. Story arc. 3-5 hashtags. Under 60 seconds."}]
+            }' | jq -r '.choices[0].message.content' > content/drafts/tt-$(date +%Y-%m-%d).txt
       
       - name: Commit drafts
         run: |
           git config user.name "Dahl AI"
-          git add .
-          git commit -m "Daily content drafts - $(date +%Y-%m-%d)"
+          git config user.email "dahl@strayd.com"
+          git add content/drafts/
+          git commit -m "Daily content drafts $(date +%Y-%m-%d)"
           git push
