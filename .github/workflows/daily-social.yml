@@ -21,23 +21,42 @@ jobs:
           mkdir -p content/drafts
           DATE=$(date +%Y-%m-%d)
           
-          # Read knowledge files
+          # Read knowledge
           BRAND=$(cat knowledge/brand/strayd.md 2>/dev/null || echo "")
           SUZUKI=$(cat characters/suzuki/-index.md 2>/dev/null || echo "")
           MARTIN=$(cat characters/martin-strayd/-index.md 2>/dev/null || echo "")
+          CONTEXT="KNOWLEDGE:\n$BRAND\n$SUZUKI\n$MARTIN\n\nWrite 1 X post. Rock. 2-3 hashtags."
           
-          # Build context
-          CONTEXT="KNOWLEDGE:\n$BRAND\n$SUZUKI\n$MARTIN\n\nINSTRUCTION: Use only facts above. Do not invent information."
-          
-          # X with knowledge
+          # Save response to file
           curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"user\",\"content\":\"$CONTEXT\n\nWrite 1 X post. Under 280 chars. Rock. 2-3 hashtags.\"}]}" \
-            | python3 -c "import sys,json; open('content/drafts/x-$DATE.md','w').write('# X Post\n\n' + json.load(sys.stdin)['choices'][0]['message']['content'])"
+            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"user\",\"content\":\"$CONTEXT\"}]}" \
+            > /tmp/response.json
           
-          echo "=== X created ==="
-          cat content/drafts/x-$DATE.md
+          echo "=== RAW RESPONSE ==="
+          cat /tmp/response.json
+          echo ""
+          echo "=== PARSING ==="
+          
+          # Parse with python
+          python3 << 'PYEOF'
+import json
+try:
+    with open('/tmp/response.json') as f:
+        data = json.load(f)
+    print("Keys:", list(data.keys()))
+    if 'choices' in data:
+        content = data['choices'][0]['message']['content']
+        with open('content/drafts/x-2026-10-30.md', 'w') as out:
+            out.write('# X Post\n\n' + content)
+        print("SUCCESS - File written")
+        print("Content:", content[:200])
+    else:
+        print("ERROR - No choices:", data)
+except Exception as e:
+    print("ERROR:", e)
+PYEOF
 
       - name: Commit
         run: |
