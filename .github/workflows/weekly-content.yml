@@ -1,1 +1,58 @@
 
+name: Weekly Content Plan
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Monday 9am weekly
+  workflow_dispatch:
+
+jobs:
+  generate-weekly-content:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate Week Content Plan
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki content strategist for STRAYD. Rock and roll. Anti-pop. Real music. Real people."}, {"role": "user", "content": "Create a 7-day social media content plan for STRAYD. Each day: X post, IG caption, TikTok idea. Rock and roll vibe. Real music. Include hashtag strategy for the week."}]
+            }' | jq -r '.choices[0].message.content' > content/drafts/week-plan-$(date +%Y-W%V).md
+      
+      - name: Generate YouTube Description
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki for STRAYD. YouTube SEO expert."}, {"role": "user", "content": "Generate a YouTube video description template for STRAYD music content. Include hook, timestamps placeholder, links section, 10 SEO tags."}]
+            }' | jq -r '.choices[0].message.content' > content/drafts/yt-template.md
+      
+      - name: Generate Facebook Post
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          curl -s https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "system", "content": "You are Suzuki for STRAYD. Facebook expert."}, {"role": "user", "content": "Generate a Facebook post for STRAYD. Story-driven. Rock vibe. Include call to action."}]
+            }' | jq -r '.choices[0].message.content' > content/drafts/fb-$(date +%Y-W%V).txt
+      
+      - name: Commit weekly content
+        run: |
+          git config user.name "Dahl AI"
+          git config user.email "dahl@strayd.com"
+          git add content/drafts/
+          git commit -m "Weekly content plan $(date +%Y-W%V)"
+          git push
