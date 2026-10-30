@@ -1,4 +1,4 @@
-name: Daily Social Posts
+name: Daily Social
 
 on:
   workflow_dispatch:
@@ -6,102 +6,34 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Read all knowledge files
-        id: read_knowledge
+      - name: Read knowledge
         run: |
-          echo "=== READING KNOWLEDGE ==="
-          
-          echo "--- BRAND ---"
-          cat knowledge/brand/strayd.md
-          cat knowledge/brand/generation-rules.md
-          
-          echo "--- PLATFORMS ---"
-          cat knowledge/platforms/social-priority.md
-          
-          echo "--- WORKFLOWS ---"
-          cat knowledge/workflows/content-pipeline.md
-          cat knowledge/workflows/triggers.md
-          
-          echo "--- SUZUKI ---"
-          cat characters/suzuki/-index.md
-          cat characters/suzuki/bio.md
-          cat characters/suzuki/voice.md
-          cat characters/suzuki/story.md
-          
-          echo "--- MARTIN ---"
-          cat characters/martin-strayd/-index.md
-          cat characters/martin-strayd/bio.md
-          cat characters/martin-strayd/voice.md
-          cat characters/martin-strayd/story.md
-          
-          echo "=== KNOWLEDGE LOADED ==="
+          ls knowledge/brand/
+          ls characters/
 
-      - name: Generate social posts
+      - name: Generate
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           pip install requests -q
-          python3 << 'PYEOF'
+          python3 -c "
 import os, requests
 from datetime import date
-
-# READ ALL KNOWLEDGE FILES
-files = [
-    "knowledge/brand/strayd.md",
-    "knowledge/brand/generation-rules.md", 
-    "knowledge/platforms/social-priority.md",
-    "knowledge/workflows/content-pipeline.md",
-    "knowledge/workflows/triggers.md",
-    "characters/suzuki/-index.md",
-    "characters/suzuki/bio.md",
-    "characters/suzuki/voice.md",
-    "characters/suzuki/story.md",
-    "characters/martin-strayd/-index.md",
-    "characters/martin-strayd/bio.md",
-    "characters/martin-strayd/voice.md",
-    "characters/martin-strayd/story.md"
-]
-
-knowledge = ""
-for f in files:
-    try:
-        knowledge += open(f).read() + "\n\n"
-    except:
-        pass
-
-print(f"Loaded {len(knowledge)} chars of knowledge")
-
-api = os.environ["DAHL_API_KEY"]
-url = "https://inference.dahl.global/v1/chat/completions"
-h = {"Authorization": "Bearer " + api}
-
-def gen(prompt):
-    r = requests.post(url, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": knowledge + "\n\n" + prompt}]}, headers=h, timeout=60)
-    return r.json()["choices"][0]["message"]["content"]
-
+k = open('knowledge/brand/strayd.md').read()
+a = os.environ['DAHL_API_KEY']
+r = requests.post('https://inference.dahl.global/v1/chat/completions', json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': k + ' Write ONE X post. Rock. 2-3 hashtags.'}]}, headers={'Authorization': 'Bearer ' + a}, timeout=60)
 t = date.today().isoformat()
-os.makedirs("content/drafts", exist_ok=True)
-
-open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + gen("Write ONE X post using the knowledge provided. Follow the brand voice and social priority rules. Output ONLY the post."))
-open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + gen("Write ONE Instagram caption using the knowledge. Follow platform rules. Output ONLY the caption."))
-open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + gen("Write TikTok script using the knowledge. Follow content pipeline. Output ONLY the script."))
-open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + gen("Write Facebook post using the knowledge. Follow workflow triggers. Output ONLY the post."))
-
-print("Done:", os.listdir("content/drafts"))
-PYEOF
+os.makedirs('content/drafts', exist_ok=True)
+open(f'content/drafts/x-{t}.md', 'w').write('# X\n\n' + r.json()['choices'][0]['message']['content'])
+print('done')
+"
 
       - name: Commit
         run: |
-          git config user.name "bot"
-          git config user.email "bot@strayd.com"
-          git add content/drafts/
-          git commit -m "Daily social $(date +%Y-%m-%d)"
-          git push origin main
+          git add -A && git commit -m "x" && git push origin main
