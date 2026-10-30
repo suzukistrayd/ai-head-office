@@ -6,88 +6,66 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Generate X
+      - name: Generate all posts
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           mkdir -p content/drafts
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://inference.dahl.global/v1/chat/completions \
+          DATE=$(date +%Y-%m-%d)
+          
+          echo "Generating X..."
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write 1 X post. Under 280 chars. Rock. 2-3 hashtags."}]}')
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-          echo "HTTP Code: $HTTP_CODE"
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "$BODY" | python3 -c "import sys,json; r=json.load(sys.stdin); open('content/drafts/x-$(date +%Y-%m-%d).md','w').write('# X Post\n\n' + r['choices'][0]['message']['content'])"
-            echo "X created"
-          else
-            echo "ERROR: $BODY"
-          fi
-
-      - name: Generate IG
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://inference.dahl.global/v1/chat/completions \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write 1 X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
+            > /tmp/x.json
+          python3 -c "import json; open('content/drafts/x-$DATE.md','w').write('# X\n\n' + json.load(open('/tmp/x.json'))['choices'][0]['message']['content'])"
+          
+          echo "Generating IG..."
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Instagram caption. Hook first. 5 hashtags."}]}')
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "$BODY" | python3 -c "import sys,json; r=json.load(sys.stdin); open('content/drafts/ig-$(date +%Y-%m-%d).md','w').write('# Instagram\n\n' + r['choices'][0]['message']['content'])"
-            echo "IG created"
-          else
-            echo "ERROR: $BODY"
-          fi
-
-      - name: Generate TT
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://inference.dahl.global/v1/chat/completions \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Instagram caption. Hook first. 5 hashtags."}]}' \
+            > /tmp/ig.json
+          python3 -c "import json; open('content/drafts/ig-$DATE.md','w').write('# IG\n\n' + json.load(open('/tmp/ig.json'))['choices'][0]['message']['content'])"
+          
+          echo "Generating TT (with retry)..."
+          for i in 1 2 3; do
+            curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+              -H "Authorization: Bearer $DAHL_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write TikTok script. Hook 3sec. Story. CTA."}]}' \
+              > /tmp/tt.json
+            if python3 -c "import json; json.load(open('/tmp/tt.json'))" 2>/dev/null; then
+              python3 -c "import json; open('content/drafts/tt-$DATE.md','w').write('# TT\n\n' + json.load(open('/tmp/tt.json'))['choices'][0]['message']['content'])"
+              echo "TT success"
+              break
+            else
+              echo "TT attempt $i failed, retrying..."
+              sleep 5
+            fi
+          done
+          
+          echo "Generating FB..."
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write TikTok script. Hook 3sec. Story. CTA."}]}')
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-          echo "TT HTTP: $HTTP_CODE"
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "$BODY" | python3 -c "import sys,json; r=json.load(sys.stdin); open('content/drafts/tt-$(date +%Y-%m-%d).md','w').write('# TikTok\n\n' + r['choices'][0]['message']['content'])"
-            echo "TT created"
-          else
-            echo "ERROR: $BODY"
-          fi
-
-      - name: Generate FB
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Facebook post. Story. Emoji. CTA."}]}')
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "$BODY" | python3 -c "import sys,json; r=json.load(sys.stdin); open('content/drafts/fb-$(date +%Y-%m-%d).md','w').write('# Facebook\n\n' + r['choices'][0]['message']['content'])"
-            echo "FB created"
-          else
-            echo "ERROR: $BODY"
-          fi
-
-      - name: Show files
-        run: |
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Facebook post. Story. Emoji. CTA."}]}' \
+            > /tmp/fb.json
+          python3 -c "import json; open('content/drafts/fb-$DATE.md','w').write('# FB\n\n' + json.load(open('/tmp/fb.json'))['choices'][0]['message']['content'])"
+          
+          echo "=== ALL DONE ==="
           ls -la content/drafts/
 
-      - name: Commit
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
