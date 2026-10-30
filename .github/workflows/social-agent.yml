@@ -83,6 +83,10 @@ jobs:
           ATTEMPTS = 6
           RETRY_DELAYS = [5, 10, 20, 40, 60, 60]
           RETRY_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
+          
+          # Validation retry settings
+          VALIDATION_RETRY_ATTEMPTS = 3
+          VALIDATION_RETRY_DELAYS = [30, 60, 90]
 
           KNOWLEDGE_FILES = [
               ("characters/martinstrayd.md", "MARTIN STRAYD — PRIORITY 1"),
@@ -211,7 +215,7 @@ jobs:
                   result = result.replace(old, new)
               return result
 
-          def build_prompt(knowledge, week_dates):
+          def build_prompt(knowledge, week_dates, retry_count=0):
               date_lines = "\n".join(
                   f"{day}: {date.isoformat()}"
                   for day, date in zip(DAYS, week_dates)
@@ -224,6 +228,24 @@ jobs:
                   hashtag_ref.append(f"\n{platform}:")
                   hashtag_ref.append("  " + " ".join(tags))
               hashtag_reference = "\n".join(hashtag_ref)
+              
+              # Add explicit retry directive if this is a retry
+              retry_directive = ""
+              if retry_count > 0:
+                  retry_directive = f"""
+          
+          IMPORTANT REMINDER - PREVIOUS ATTEMPT FAILED
+          Your previous response was rejected because it was missing required sections.
+          You MUST include ALL {len(SECTIONS)} sections for EVERY day:
+          {section_lines}
+          
+          Check your response BEFORE submitting:
+          - Does EVERY day (Monday through Sunday) have ALL 7 sections?
+          - Are "Image Prompt" and "Short Video Idea" present for each day?
+          - Did you include actual content under each section heading?
+          
+          If any section is missing or empty, your response will be rejected.
+          """
 
               return f"""
           You are the STRAYD Content Director and the executable social-content
@@ -397,8 +419,21 @@ jobs:
           6. No factual claims exceed the supplied knowledge.
           7. The output is Markdown only.
 
+          REQUIRED SECTIONS CHECKLIST
+          Every single day MUST have ALL of these sections:
+          - ### X
+          - ### Facebook
+          - ### YouTube Community
+          - ### TikTok
+          - ### Instagram
+          - ### Image Prompt
+          - ### Short Video Idea
+          
+          Count the sections in your output. There should be 7 sections x 7 days = 49 section headings total.
+
           SUPPLIED KNOWLEDGE FILES
-          {knowledge}
+         {knowledge}
+          {retry_directive}
           """.strip()
 
           def call_dahl(prompt):
@@ -635,12 +670,44 @@ jobs:
           def main():
               week_dates = current_week()
               knowledge = read_knowledge()
-              prompt = build_prompt(knowledge, week_dates)
-
-              log(f"Generating content for week beginning {week_dates[0]}.")
-              markdown = call_dahl(prompt)
-
-              daily_sections = parse_and_validate(markdown, week_dates)
+              
+              # Validation retry loop - retry up to VALIDATION_RETRY_ATTEMPTS times
+              # when content validation fails (e.g., missing sections)
+              markdown = None
+              last_validation_error = None
+              
+              for validation_attempt in range(1, VALIDATION_RETRY_ATTEMPTS + 1):
+                  retry_count = validation_attempt - 1
+                  prompt = build_prompt(knowledge, week_dates, retry_count)
+                  
+                  log(f"Generating content for week beginning {week_dates[0]} "
+                      f"(validation attempt {validation_attempt}/{VALIDATION_RETRY_ATTEMPTS}).")
+                  
+                  markdown = call_dahl(prompt)
+                  
+                  try:
+                      daily_sections = parse_and_validate(markdown, week_dates)
+                      # Validation succeeded - break out of retry loop
+                      log(f"Content validation passed on attempt {validation_attempt}.")
+                      break
+                  except SystemExit:
+                      # Re-raise system exit (fail called)
+                      raise
+                  except Exception as exc:
+                      last_validation_error = str(exc)
+                      log(f"Validation failed: {last_validation_error}")
+                      
+                      if validation_attempt < VALIDATION_RETRY_ATTEMPTS:
+                          delay = VALIDATION_RETRY_DELAYS[validation_attempt - 1]
+                          log(f"Retrying validation after {delay} seconds...")
+                          time.sleep(delay)
+                      else:
+                          # Final attempt failed - fail with the last error
+                          fail(
+                              f"Content validation failed after "
+                              f"{VALIDATION_RETRY_ATTEMPTS} attempts. "
+                              f"Last error: {last_validation_error}"
+                          )
 
               weekly_path = Path(
                   "social-posts/weekly/"
