@@ -14,10 +14,32 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
+          fetch-depth: 0
       
-      - name: Create INPUT folder
+      - name: Create ALL folders first
         run: |
           mkdir -p INPUT/templates
+          mkdir -p INPUT/templates
+          mkdir -p characters/suzuki/headshots
+          mkdir -p characters/martin-strayd/headshots
+          mkdir -p mascot-maker/approved-mascots
+          mkdir -p strayd-stories
+          mkdir -p promotion-studio/headshots/results
+          mkdir -p promotion-studio/ecommerce/mockups
+          mkdir -p promotion-studio/editorial-posters/templates
+          mkdir -p knowledge/brand
+          mkdir -p knowledge/platforms
+          mkdir -p knowledge/workflows
+          mkdir -p OUTPUT/social-posts
+          mkdir -p OUTPUT/images
+          mkdir -p OUTPUT/captions
+          mkdir -p archive/processed
+          mkdir -p archive/rejected
+          echo "=== All folders created ==="
+          ls -la
+
+      - name: Create INPUT files
+        run: |
           printf '# INPUT\nDump files here\n' > INPUT/README.md
           printf '# INTAKE AGENT\n' > INPUT/INTAKE-Agent.md
           printf '# Inbox\nUnsorted notes\n' > INPUT/inbox.md
@@ -26,10 +48,8 @@ jobs:
           printf '# Idea Dump\n' > INPUT/templates/idea-dump.md
           echo "INPUT done"
 
-      - name: Create characters folders
+      - name: Create character files
         run: |
-          mkdir -p characters/suzuki/headshots
-          mkdir -p characters/martin-strayd/headshots
           printf '# SUZUKI\nMedia Manager\n' > characters/suzuki/-index.md
           printf '# Bio\n' > characters/suzuki/bio.md
           printf '# Visual Rules\n' > characters/suzuki/visual-rules.md
@@ -44,61 +64,29 @@ jobs:
           printf '# Headshots\n' > characters/martin-strayd/headshots/-placeholders.md
           echo "Characters done"
 
-      - name: Create mascot-maker
+      - name: Create other folders
         run: |
-          mkdir -p mascot-maker/approved-mascots
           printf '# Mascot Prompt Builder\n' > mascot-maker/mascot-prompt-builder.md
           printf '# Mascot Ideas\n' > mascot-maker/mascot-ideas.md
           printf '# Approved Mascots\n' > mascot-maker/approved-mascots/README.md
-          echo "Mascot done"
-
-      - name: Create strayd-stories
-        run: |
           printf '# STRAYD Stories\n' > strayd-stories/approved-stories.md
-          echo "Stories done"
-
-      - name: Create promotion-studio
-        run: |
-          mkdir -p promotion-studio/headshots/results
-          mkdir -p promotion-studio/ecommerce/mockups
-          mkdir -p promotion-studio/editorial-posters/templates
           printf '# Headshots Workflow\n' > promotion-studio/headshots/workflow.md
           printf '# Results\n' > promotion-studio/headshots/results/README.md
           printf '# E-commerce Workflow\n' > promotion-studio/ecommerce/merch-workflow.md
           printf '# Mockups\n' > promotion-studio/ecommerce/mockups/README.md
           printf '# Poster Workflow\n' > promotion-studio/editorial-posters/poster-workflow.md
           printf '# Templates\n' > promotion-studio/editorial-posters/templates/README.md
-          echo "Promotion studio done"
-
-      - name: Create knowledge
-        run: |
-          mkdir -p knowledge/brand
-          mkdir -p knowledge/platforms
-          mkdir -p knowledge/workflows
           printf '# STRAYD Brand\n' > knowledge/brand/strayd.md
           printf '# Generation Rules\n' > knowledge/brand/generation-rules.md
           printf '# Social Priority\n' > knowledge/platforms/social-priority.md
           printf '# Content Pipeline\n' > knowledge/workflows/content-pipeline.md
           printf '# Triggers\n' > knowledge/workflows/triggers.md
-          echo "Knowledge done"
-
-      - name: Create OUTPUT
-        run: |
-          mkdir -p OUTPUT/social-posts
-          mkdir -p OUTPUT/images
-          mkdir -p OUTPUT/captions
           printf '# Social Posts\n' > OUTPUT/social-posts/README.md
           printf '# Images\n' > OUTPUT/images/README.md
           printf '# Captions\n' > OUTPUT/captions/README.md
-          echo "OUTPUT done"
-
-      - name: Create archive
-        run: |
-          mkdir -p archive/processed
-          mkdir -p archive/rejected
           printf '# Processed\n' > archive/processed/README.md
           printf '# Rejected\n' > archive/rejected/README.md
-          echo "Archive done"
+          echo "All other files done"
 
       - name: Show structure
         run: |
