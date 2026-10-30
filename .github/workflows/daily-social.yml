@@ -15,7 +15,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Generate content with knowledge
+      - name: Generate content
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
@@ -24,88 +24,47 @@ jobs:
 import os, requests
 from datetime import date
 
-print("=== STEP 1: Loading knowledge files ===")
+# Load ONLY the verified knowledge from files
+brand = open('knowledge/brand/strayd.md').read() if os.path.exists('knowledge/brand/strayd.md') else ""
+suzuki = open('characters/suzuki/-index.md').read() if os.path.exists('characters/suzuki/-index.md') else ""
+martin = open('characters/martin-strayd/-index.md').read() if os.path.exists('characters/martin-strayd/-index.md') else ""
 
-# Load knowledge
-brand = ""
-if os.path.exists('knowledge/brand/strayd.md'):
-    brand = open('knowledge/brand/strayd.md').read()
-    print(f"✅ Brand loaded: {len(brand)} chars")
-else:
-    print("❌ Brand file NOT found")
-
-suzuki = ""
-if os.path.exists('characters/suzuki/-index.md'):
-    suzuki = open('characters/suzuki/-index.md').read()
-    print(f"✅ Suzuki loaded: {len(suzuki)} chars")
-else:
-    print("❌ Suzuki file NOT found")
-
-martin = ""
-if os.path.exists('characters/martin-strayd/-index.md'):
-    martin = open('characters/martin-strayd/-index.md').read()
-    print(f"✅ Martin loaded: {len(martin)} chars")
-else:
-    print("❌ Martin file NOT found")
-
-# Build context
-context = f"""STRAYD BRAND INFO:
+# This is the ONLY truth - use ONLY this info
+TRUTH = f"""USE ONLY THIS INFORMATION - DO NOT ADD ANYTHING ELSE:
 {brand}
-
-SUZUKI INFO:
 {suzuki}
+{martin}
 
-MARTIN STRAYD INFO:
-{martin}"""
+IMPORTANT: Only use the facts above. Do not invent songs, shows, quotes, locations, or any information not in this text."""
 
-print(f"\n=== STEP 2: Total context: {len(context)} chars ===")
+t = date.today().isoformat()
+os.makedirs('content/drafts', exist_ok=True)
 
-# Setup API
 a = os.environ['DAHL_API_KEY']
 u = 'https://inference.dahl.global/v1/chat/completions'
 h = {'Authorization': f'Bearer {a}', 'Content-Type': 'application/json'}
 
 def gen(prompt):
-    try:
-        print(f"Calling Dahl with prompt: {prompt[:50]}...")
-        r = requests.post(u, json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': context[:8000] + '\n\n' + prompt}]}, headers=h, timeout=60)
-        result = r.json()
-        if 'choices' in result:
-            return result['choices'][0]['message']['content']
-        else:
-            print(f"❌ API Error: {result}")
-            return "ERROR: " + str(result)
-    except Exception as e:
-        print(f"❌ Exception: {e}")
-        return f"ERROR: {e}"
+    r = requests.post(u, json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': TRUTH + '\n\n' + prompt}]}, headers=h, timeout=60)
+    return r.json()['choices'][0]['message']['content']
 
-t = date.today().isoformat()
-os.makedirs('content/drafts', exist_ok=True)
-print(f"\n=== STEP 3: Generating content for {t} ===")
-
-# Generate all 4 platforms
-x = gen('Write 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Witty.')
-print(f"✅ X generated: {len(x)} chars")
+# X Post - simple, no quotes
+x = gen('Write 1 X/Twitter post for STRAYD. Under 280 chars. Rock vibe. 2-3 hashtags. Make it punchy and energetic. Do not add quotes or made-up facts.')
 open(f'content/drafts/x-{t}.md', 'w').write(f'# X Post\n\n{x}')
 
-ig = gen('Write 1 Instagram caption. Hook first line. 5 hashtags.')
-print(f"✅ IG generated: {len(ig)} chars")
+# Instagram - hook only
+ig = gen('Write 1 Instagram caption for STRAYD. Hook first line. 5 hashtags. Rock energy. No invented quotes or facts.')
 open(f'content/drafts/ig-{t}.md', 'w').write(f'# Instagram Caption\n\n{ig}')
 
-tt = gen('Write TikTok script. Hook 3sec, story arc, ending CTA, 3-5 hashtags.')
-print(f"✅ TT generated: {len(tt)} chars")
+# TikTok - script format
+tt = gen('Write TikTok script for STRAYD. Hook 3sec, story arc, ending CTA, 3-5 hashtags. No made-up info.')
 open(f'content/drafts/tt-{t}.md', 'w').write(f'# TikTok Script\n\n{tt}')
 
-fb = gen('Write Facebook post. Story-driven. Emoji. Call to action.')
-print(f"✅ FB generated: {len(fb)} chars")
+# Facebook - community
+fb = gen('Write Facebook post for STRAYD. Story-driven. Emoji. Call to action. No invented facts.')
 open(f'content/drafts/fb-{t}.md', 'w').write(f'# Facebook Post\n\n{fb}')
 
-print(f"\n=== STEP 4: Files created ===")
-for f in os.listdir('content/drafts'):
-    size = os.path.getsize(f'content/drafts/{f}')
-    print(f"  {f} ({size} bytes)")
-
-print(f"\nView at: https://github.com/suzukistrayd/ai-head-office/tree/main/content/drafts")
+print('Done:', os.listdir('content/drafts'))
 PYEOF
 
       - name: Commit
@@ -113,6 +72,5 @@ PYEOF
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
-          git status
           git commit -m "Social content $(date +%Y-%m-%d)"
           git push origin main
