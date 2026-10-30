@@ -1,8 +1,6 @@
 name: Daily Social Posts
 
 on:
-  schedule:
-    - cron: '0 18 * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,58 +15,63 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Generate content
+      - name: Generate content with knowledge
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          python3 -c "
-import os
-import requests
+          pip install requests -q
+          python3 <<EOF
+import os, requests
 from datetime import date
 
-api_key = os.environ['DAHL_API_KEY']
-url = 'https://inference.dahl.global/v1/chat/completions'
-headers = {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}
+# Load knowledge
+brand = ""
+if os.path.exists('knowledge/brand/strayd.md'):
+    brand = open('knowledge/brand/strayd.md').read()
+    print("Brand loaded:", len(brand), "chars")
 
-def gen(prompt):
-    try:
-        resp = requests.post(url, json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': prompt}]}, headers=headers, timeout=30)
-        return resp.json()['choices'][0]['message']['content']
-    except Exception as e:
-        return f'Error: {e}'
+suzuki = ""
+if os.path.exists('characters/suzuki/-index.md'):
+    suzuki = open('characters/suzuki/-index.md').read()
+    print("Suzuki loaded:", len(suzuki), "chars")
 
-os.makedirs('content/drafts', exist_ok=True)
-today = date.today().isoformat()
+martin = ""
+if os.path.exists('characters/martin-strayd/-index.md'):
+    martin = open('characters/martin-strayd/-index.md').read()
+    print("Martin loaded:", len(martin), "chars")
 
-x = gen('STRAYD featuring Martin Strayd (Australian rock musician, guitarist, songwriter) and Suzuki (Thai-Japanese media manager, band manager). Anti-Pop Rock and Roll. Message: Real music. Real people. Real lives. No waiting for permission. Write 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Witty and sharp.')
-open(f'content/drafts/x-{today}.md', 'w').write(f'# X Post\n\n{x}')
+# Build context
+context = f"""STRAYD BRAND INFO:
+{brand}
 
-ig = gen('STRAYD featuring Martin Strayd (Australian rock, guitarist, songwriter) and Suzuki (Thai-Japanese media manager). Anti-Pop Rock and Roll. Message: Real music. Real people. Real lives. No waiting for permission. Write 1 Instagram caption. Hook first line. Body 2-3 sentences with rock energy. 5 hashtags. End with: real music. real people.')
-open(f'content/drafts/ig-{today}.md', 'w').write(f'# Instagram Caption\n\n{ig}')
+SUZUKI INFO:
+{suzuki}
 
-tt = gen('STRAYD featuring Martin Strayd (Australian rock musician) and Suzuki (media manager). Anti-Pop Rock and Roll. Message: Real music. Real people. Real lives. No waiting for permission. Write TikTok script: Hook first 3 seconds. Story arc 30-45 seconds. Ending call to action. 3-5 hashtags. Rock vibe.')
-open(f'content/drafts/tt-{today}.md', 'w').write(f'# TikTok Script\n\n{tt}')
+MARTIN STRAYD INFO:
+{martin}"""
 
-fb = gen('STRAYD featuring Martin Strayd (Australian rock musician) and Suzuki (band manager). Anti-Pop Rock and Roll. Message: Real music. Real people. Real lives. No waiting for permission. Write Facebook post. Story-driven. 2-4 sentences. Include emoji. Call to action. Rock energy.')
-open(f'content/drafts/fb-{today}.md', 'w').write(f'# Facebook Post\n\n{fb}')
+a=os.environ['DAHL_API_KEY']
+u='https://inference.dahl.global/v1/chat/completions'
+h={'Authorization':f'Bearer {a}','Content-Type':'application/json'}
+def g(m):
+ r=requests.post(u,json={'model':'MiniMaxAI/MiniMax-M2.7','messages':[{'role':'user','content':context[:8000]+'\n\n'+m}]},headers=h,timeout=30)
+ return r.json()['choices'][0]['message']['content']
 
-yt = gen('STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Message: Real music. Real people. Real lives. No waiting for permission. Write YouTube description: Hook first 150 characters, main description 2-3 paragraphs, timestamps placeholder, links section, 10 SEO tags. End with: real music. real people. real stories.')
-open(f'content/drafts/yt-{today}.md', 'w').write(f'# YouTube Description\n\n{yt}')
+t=date.today().isoformat()
+os.makedirs('content/drafts',exist_ok=True)
 
-print('Files created:')
-for f in os.listdir('content/drafts'):
-    print(f'  {f}')
-"
+open(f'content/drafts/x-{t}.md','w').write('# X Post\n\n'+g('Write 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Witty.'))
+open(f'content/drafts/ig-{t}.md','w').write('# Instagram Caption\n\n'+g('Write 1 Instagram caption. Hook first line. 5 hashtags.'))
+open(f'content/drafts/tt-{t}.md','w').write('# TikTok Script\n\n'+g('Write TikTok script. Hook 3sec, story arc, ending CTA, 3-5 hashtags.'))
+open(f'content/drafts/fb-{t}.md','w').write('# Facebook Post\n\n'+g('Write Facebook post. Story-driven. Emoji. Call to action.'))
 
-      - name: Commit and push
+print('\nFiles:', os.listdir('content/drafts'))
+EOF
+
+      - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
-          git commit -m "Daily social content $(date +%Y-%m-%d)"
+          git commit -m "Social content $(date +%Y-%m-%d)"
           git push origin main
