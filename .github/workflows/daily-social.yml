@@ -1,25 +1,21 @@
-name: Daily Social Posts (All Platforms)
+name: Daily Social Posts - All Platforms
 
 on:
   schedule:
     - cron: '0 18 * * *'
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   generate-content:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Create directories
-        run: |
-          mkdir -p content/drafts
+        run: mkdir -p content/drafts
 
       - name: Generate X Post
         env:
@@ -33,7 +29,7 @@ jobs:
               "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission. Witty and sharp."}, {"role": "user", "content": "Generate 1 X/Twitter post. Under 280 chars. Rock vibe. Include 2-3 hashtags. End with energy."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/x-$(date +%Y-%m-%d).txt
-          cat content/drafts/x-$(date +%Y-%m-%d).txt
+          echo "=== X POST ===" && cat content/drafts/x-$(date +%Y-%m-%d).txt
 
       - name: Generate Instagram Caption
         env:
@@ -47,7 +43,7 @@ jobs:
               "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission."}, {"role": "user", "content": "Generate 1 Instagram caption. Hook line first. 2-3 sentences. 5 relevant hashtags. End with real music. real people."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/ig-$(date +%Y-%m-%d).txt
-          cat content/drafts/ig-$(date +%Y-%m-%d).txt
+          echo "=== INSTAGRAM ===" && cat content/drafts/ig-$(date +%Y-%m-%d).txt
 
       - name: Generate TikTok Script
         env:
@@ -61,7 +57,7 @@ jobs:
               "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll. Witty. Short form video."}, {"role": "user", "content": "Generate 1 TikTok script. Hook first 3 seconds. Story arc. 3-5 hashtags. Under 60 seconds."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/tt-$(date +%Y-%m-%d).txt
-          cat content/drafts/tt-$(date +%Y-%m-%d).txt
+          echo "=== TIKTOK ===" && cat content/drafts/tt-$(date +%Y-%m-%d).txt
 
       - name: Generate Facebook Post
         env:
@@ -75,7 +71,7 @@ jobs:
               "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll. Story-driven. Community focus."}, {"role": "user", "content": "Generate 1 Facebook post. Story-driven. Rock vibe. Include call to action. 2-4 sentences. Emoji适量."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/fb-$(date +%Y-%m-%d).txt
-          cat content/drafts/fb-$(date +%Y-%m-%d).txt
+          echo "=== FACEBOOK ===" && cat content/drafts/fb-$(date +%Y-%m-%d).txt
 
       - name: Generate YouTube Description
         env:
@@ -86,15 +82,15 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "system", "content": "You are Suzuki for STRAYD. YouTube SEO expert. Music content."}, {"role": "user", "content": "Generate YouTube video description for STRAYD music. Include: Hook (first 150 chars), timestamps placeholder, links section, 10 SEO tags, end with real music. real people."}]
+              "messages": [{"role": "system", "content": "You are Suzuki for STRAYD. YouTube SEO expert."}, {"role": "user", "content": "Generate YouTube description. Hook first 150 chars. 10 SEO tags. End real music real people."}]
             }')
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/yt-$(date +%Y-%m-%d).txt
-          cat content/drafts/yt-$(date +%Y-%m-%d).txt
+          echo "=== YOUTUBE ===" && cat content/drafts/yt-$(date +%Y-%m-%d).txt
 
-      - name: Commit all drafts
+      - name: Commit and Push
         run: |
-          git config user.name "Dahl AI"
-          git config user.email "dahl@strayd.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
-          git commit -m "Daily content all platforms $(date +%Y-%m-%d)"
-          git push || echo "Push skipped"
+          git commit -m "Daily content $(date +%Y-%m-%d)" || echo "Nothing to commit"
+          git push origin main || echo "Push failed - check permissions"
