@@ -22,7 +22,7 @@ jobs:
           curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"system","content":"You are a social media manager. Output ONLY the post text. No explanations. No analysis. No thinking. Just the post."},{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write ONE X post. Under 280 chars. Rock. 2-3 hashtags. Output ONLY the post."}]}' \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STOP THINKING. Output ONLY the final post. Nothing else. No explanations. No analysis. No labels. Just the text.\n\nSTRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. One X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
             > /tmp/response.json
           python3 -c "import json; open('content/drafts/x-$(date +%Y-%m-%d).md','w').write('# X Post\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
 
