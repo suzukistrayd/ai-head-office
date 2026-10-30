@@ -19,19 +19,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Read knowledge
-        run: |
-          cat knowledge/brand/strayd.md
-
       - name: Generate X post
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           pip install requests -q
-          python3 -c "import os,requests; from datetime import date; k=open('knowledge/brand/strayd.md').read(); a=os.environ['DAHL_API_KEY']; r=requests.post('https://inference.dahl.global/v1/chat/completions', json={'model':'MiniMaxAI/MiniMax-M2.7','messages':[{'role':'user','content':k+' Write ONE X post. Rock. 2-3 hashtags.'}]}, headers={'Authorization':'Bearer '+a}, timeout=60); t=date.today().isoformat(); os.makedirs('content/drafts',exist_ok=True); open(f'content/drafts/x-{t}.md','w').write('# X\n\n'+r.json()['choices'][0]['message']['content']); print('done')"
+          python3 -c "
+import os, requests, re
+from datetime import date
 
-      - name: Commit
-        run: |
-          git add -A
-          git commit -m "daily"
-          git push origin main
+k = open('knowledge/brand/strayd.md').read()
+a = os.environ['DAHL_API_KEY']
+
+r = requests.post('https://inference.dahl.global/v1/chat/completions', 
+    json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': k + ' Output ONLY the X post. No explanations. No labels. No character counting. Just the post text. Write ONE X post. Rock. 2-3 hashtags.'}]},
+    headers={'Authorization': 'Bearer ' + a}, timeout=60
