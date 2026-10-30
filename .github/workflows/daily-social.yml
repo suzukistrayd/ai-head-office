@@ -15,62 +15,103 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
+      - name: Check files exist
+        run: |
+          echo "=== CHECKING REPO STRUCTURE ==="
+          ls -la
+          echo ""
+          echo "=== KNOWLEDGE FOLDER ==="
+          ls -la knowledge/ 2>/dev/null || echo "NO KNOWLEDGE FOLDER"
+          echo ""
+          echo "=== CHARACTERS FOLDER ==="
+          ls -la characters/ 2>/dev/null || echo "NO CHARACTERS FOLDER"
+
       - name: Generate content
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           pip install requests -q
           python3 -c "
-import os, requests, json
+import os, requests
 from datetime import date
 
+print('=== LOADING KNOWLEDGE ===')
+
+# Check files exist
+if not os.path.exists('knowledge/brand/strayd.md'):
+    print('ERROR: knowledge/brand/strayd.md NOT FOUND')
+    exit(1)
+if not os.path.exists('characters/suzuki/-index.md'):
+    print('ERROR: characters/suzuki/-index.md NOT FOUND')
+    exit(1)
+if not os.path.exists('characters/martin-strayd/-index.md'):
+    print('ERROR: characters/martin-strayd/-index.md NOT FOUND')
+    exit(1)
+
 # Load knowledge
-with open('knowledge/brand/strayd.md', 'r') as f: brand = f.read()
-with open('characters/suzuki/-index.md', 'r') as f: suzuki = f.read()
-with open('characters/martin-strayd/-index.md', 'r') as f: martin = f.read()
+brand = open('knowledge/brand/strayd.md', 'r').read()
+suzuki = open('characters/suzuki/-index.md', 'r').read()
+martin = open('characters/martin-strayd/-index.md', 'r').read()
+
+print(f'Brand: {len(brand)} chars')
+print(f'Suzuki: {len(suzuki)} chars')
+print(f'Martin: {len(martin)} chars')
 
 TRUTH = brand + '\n' + suzuki + '\n' + martin
+print(f'Total context: {len(TRUTH)} chars')
 
 api_key = os.environ['DAHL_API_KEY']
 url = 'https://inference.dahl.global/v1/chat/completions'
 headers = {'Authorization': 'Bearer ' + api_key, 'Content-Type': 'application/json'}
 
 def gen(msg):
+    print(f'Calling API: {msg[:50]}...')
     data = {'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': TRUTH[:5000] + '\n\n' + msg}]}
-    try:
-        r = requests.post(url, json=data, headers=headers, timeout=60)
-        result = r.json()
-        if 'choices' in result:
-            return result['choices'][0]['message']['content']
-        else:
-            print('API Error:', result)
-            return 'ERROR: ' + str(result)
-    except Exception as e:
-        print('Exception:', e)
-        return 'ERROR: ' + str(e)
+    r = requests.post(url, json=data, headers=headers, timeout=60)
+    result = r.json()
+    if 'choices' in result:
+        return result['choices'][0]['message']['content']
+    else:
+        print(f'API ERROR: {result}')
+        return 'ERROR'
 
 t = date.today().isoformat()
 os.makedirs('content/drafts', exist_ok=True)
 
+print('=== GENERATING CONTENT ===')
+
 x = gen('X post. Under 280 chars. Rock. 2-3 hashtags.')
+print(f'X result: {x[:100]}...')
 open(f'content/drafts/x-{t}.md', 'w').write('# X Post\n\n' + x)
 
 ig = gen('Instagram caption. Hook first. 5 hashtags.')
+print(f'IG result: {ig[:100]}...')
 open(f'content/drafts/ig-{t}.md', 'w').write('# Instagram\n\n' + ig)
 
 tt = gen('TikTok script. Hook 3sec. Story. CTA.')
+print(f'TT result: {tt[:100]}...')
 open(f'content/drafts/tt-{t}.md', 'w').write('# TikTok\n\n' + tt)
 
 fb = gen('Facebook post. Story. Emoji. CTA.')
+print(f'FB result: {fb[:100]}...')
 open(f'content/drafts/fb-{t}.md', 'w').write('# Facebook\n\n' + fb)
 
-print('Done:', os.listdir('content/drafts'))
+print('=== FILES CREATED ===')
+for f in os.listdir('content/drafts'):
+    size = os.path.getsize(f'content/drafts/{f}')
+    print(f'{f}: {size} bytes')
 "
+
+      - name: Git status
+        run: |
+          echo "=== GIT STATUS ==="
+          git status
 
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
+          git status
           git commit -m "Social content $(date +%Y-%m-%d)"
           git push origin main
