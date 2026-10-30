@@ -23,9 +23,45 @@ jobs:
           curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write 1 X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"Output ONLY the X post text. Nothing else. No explanations. No counting. Just the post.\n\nSTRAYD featuring Martin Strayd & Suzuki. Anti-Pop Rock and Roll. Under 280 chars. 2-3 hashtags."}]}' \
             > /tmp/response.json
           python3 -c "import json; open('content/drafts/x-'+'$DATE'+'.md','w').write('# X Post\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
+
+      - name: Generate IG Caption
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"Output ONLY the Instagram caption. Nothing else. Hook first. 5 hashtags."}]}' \
+            > /tmp/response.json
+          python3 -c "import json; open('content/drafts/ig-'+'$DATE'+'.md','w').write('# Instagram\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
+
+      - name: Generate TikTok
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"Output ONLY the TikTok script. Nothing else. Hook 3sec. Story. CTA."}]}' \
+            > /tmp/response.json
+          python3 -c "import json; open('content/drafts/tt-'+'$DATE'+'.md','w').write('# TikTok\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
+
+      - name: Generate Facebook
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"Output ONLY the Facebook post. Nothing else. Story. Emoji. CTA."}]}' \
+            > /tmp/response.json
+          python3 -c "import json; open('content/drafts/fb-'+'$DATE'+'.md','w').write('# Facebook\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
 
       - name: Commit
         run: |
