@@ -14,52 +14,21 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Generate X with knowledge
+      - name: Generate X Post
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           mkdir -p content/drafts
           DATE=$(date +%Y-%m-%d)
-          
-          # Read knowledge
-          BRAND=$(cat knowledge/brand/strayd.md 2>/dev/null || echo "")
-          SUZUKI=$(cat characters/suzuki/-index.md 2>/dev/null || echo "")
-          MARTIN=$(cat characters/martin-strayd/-index.md 2>/dev/null || echo "")
-          CONTEXT="KNOWLEDGE:\n$BRAND\n$SUZUKI\n$MARTIN\n\nWrite 1 X post. Rock. 2-3 hashtags."
-          
-          # Save response to file
           curl -s -X POST https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"user\",\"content\":\"$CONTEXT\"}]}" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write 1 X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
             > /tmp/response.json
-          
-          echo "=== RAW RESPONSE ==="
-          cat /tmp/response.json
-          echo ""
-          echo "=== PARSING ==="
-          
-          # Parse with python
-          python3 << 'PYEOF'
-import json
-try:
-    with open('/tmp/response.json') as f:
-        data = json.load(f)
-    print("Keys:", list(data.keys()))
-    if 'choices' in data:
-        content = data['choices'][0]['message']['content']
-        with open('content/drafts/x-2026-10-30.md', 'w') as out:
-            out.write('# X Post\n\n' + content)
-        print("SUCCESS - File written")
-        print("Content:", content[:200])
-    else:
-        print("ERROR - No choices:", data)
-except Exception as e:
-    print("ERROR:", e)
-PYEOF
+          python3 -c "import json; open('content/drafts/x-'+'$DATE'+'.md','w').write('# X Post\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
 
       - name: Commit
         run: |
           git add content/drafts/
-          git commit -m "Daily content $DATE"
-          git push
+          git commit -m "Daily content $(date +%Y-%m-%d)"
+          git push origin main
