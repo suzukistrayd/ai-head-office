@@ -1,4 +1,4 @@
-name: Daily Social Posts
+name: Approve Posts
 
 on:
   workflow_dispatch:
