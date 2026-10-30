@@ -17,86 +17,71 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Create drafts folder
-        run: mkdir -p content/drafts
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-      - name: Generate X Post
+      - name: Generate all social content
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"You are social media manager for STRAYD featuring Martin Strayd (Australian rock musician, 55) and Suzuki (Thai-Japanese media manager, 36). Brand: Anti-Pop Rock. NEVER invent events. Generate 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Punchy."}]}' | jq -r '.choices[0].message.content')
-          echo "# X (Twitter) Post" > content/drafts/x-$(date +%Y-%m-%d).md
-          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/x-$(date +%Y-%m-%d).md
-          echo "" >> content/drafts/x-$(date +%Y-%m-%d).md
-          echo "$TEXT" >> content/drafts/x-$(date +%Y-%m-%d).md
-          cat content/drafts/x-$(date +%Y-%m-%d).md
+          python3 << 'PYTHON'
+import os
+import requests
+from datetime import date
 
-      - name: Generate Instagram
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd (Australian rock) and Suzuki (media manager). Anti-Pop Rock. NEVER invent. Generate 1 Instagram caption. Hook first, body 2-3 sentences, 5 hashtags. End: real music. real people."}]}' | jq -r '.choices[0].message.content')
-          echo "# Instagram Caption" > content/drafts/ig-$(date +%Y-%m-%d).md
-          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/ig-$(date +%Y-%m-%d).md
-          echo "" >> content/drafts/ig-$(date +%Y-%m-%d).md
-          echo "$TEXT" >> content/drafts/ig-$(date +%Y-%m-%d).md
-          cat content/drafts/ig-$(date +%Y-%m-%d).md
+api_key = os.environ['DAHL_API_KEY']
+url = "https://inference.dahl.global/v1/chat/completions"
+headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-      - name: Generate TikTok
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD. Martin Strayd (Australian rock, 55). Suzuki (media manager, 36). Anti-Pop Rock. NEVER invent. Generate TikTok script: Hook 3 sec, story arc 30-45 sec, ending CTA. 3-5 hashtags. Under 60 sec."}]}' | jq -r '.choices[0].message.content')
-          echo "# TikTok Script" > content/drafts/tt-$(date +%Y-%m-%d).md
-          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/tt-$(date +%Y-%m-%d).md
-          echo "" >> content/drafts/tt-$(date +%Y-%m-%d).md
-          echo "$TEXT" >> content/drafts/tt-$(date +%Y-%m-%d).md
-          cat content/drafts/tt-$(date +%Y-%m-%d).md
+def generate(prompt):
+    data = {"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": prompt}]}
+    try:
+        resp = requests.post(url, json=data, headers=headers, timeout=30)
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"Error: {e}"
 
-      - name: Generate Facebook
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD. Martin Strayd (Australian rock). Suzuki (band manager). Anti-Pop Rock. NEVER invent. Generate Facebook post: story-driven, 2-4 sentences, emoji, CTA. End: real music. real people."}]}' | jq -r '.choices[0].message.content')
-          echo "# Facebook Post" > content/drafts/fb-$(date +%Y-%m-%d).md
-          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/fb-$(date +%Y-%m-%d).md
-          echo "" >> content/drafts/fb-$(date +%Y-%m-%d).md
-          echo "$TEXT" >> content/drafts/fb-$(date +%Y-%m-%d).md
-          cat content/drafts/fb-$(date +%Y-%m-%d).md
+os.makedirs("content/drafts", exist_ok=True)
+today = date.today().isoformat()
 
-      - name: Generate YouTube
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          TEXT=$(curl -s https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock. NEVER invent. Generate YouTube description: Hook 150 chars, description 2-3 paragraphs, timestamps, links, 10 SEO tags. End: real music. real people. real stories."}]}' | jq -r '.choices[0].message.content')
-          echo "# YouTube Description" > content/drafts/yt-$(date +%Y-%m-%d).md
-          echo "**Date:** $(date +%Y-%m-%d)" >> content/drafts/yt-$(date +%Y-%m-%d).md
-          echo "" >> content/drafts/yt-$(date +%Y-%m-%d).md
-          echo "$TEXT" >> content/drafts/yt-$(date +%Y-%m-%d).md
-          cat content/drafts/yt-$(date +%Y-%m-%d).md
+# X Post
+x = generate("You are social media manager for STRAYD featuring Martin Strayd (Australian rock musician, 55) and Suzuki (Thai-Japanese media manager, 36). Anti-Pop Rock. NEVER invent events. Generate 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Punchy.")
+with open(f"content/drafts/x-{today}.md", "w") as f:
+    f.write(f"# X (Twitter) Post\n\n**Date:** {today}\n\n{x}")
+print(f"X: {x[:100]}...")
 
-      - name: Show all files
-        run: |
-          echo "=== FILES CREATED ==="
-          ls -la content/drafts/
-          echo ""
-          echo "=== VIEW AT ==="
-          echo "https://github.com/suzukistrayd/ai-head-office/tree/main/content/drafts"
+# Instagram
+ig = generate("STRAYD featuring Martin Strayd (Australian rock) and Suzuki (media manager). Anti-Pop Rock. NEVER invent. Generate 1 Instagram caption. Hook first, body 2-3 sentences, 5 hashtags. End: real music. real people.")
+with open(f"content/drafts/ig-{today}.md", "w") as f:
+    f.write(f"# Instagram Caption\n\n**Date:** {today}\n\n{ig}")
+print(f"IG: {ig[:100]}...")
+
+# TikTok
+tt = generate("STRAYD. Martin Strayd (Australian rock, 55). Suzuki (media manager, 36). Anti-Pop Rock. NEVER invent. Generate TikTok script: Hook 3 sec, story arc 30-45 sec, ending CTA. 3-5 hashtags. Under 60 sec.")
+with open(f"content/drafts/tt-{today}.md", "w") as f:
+    f.write(f"# TikTok Script\n\n**Date:** {today}\n\n{tt}")
+print(f"TT: {tt[:100]}...")
+
+# Facebook
+fb = generate("STRAYD. Martin Strayd (Australian rock). Suzuki (band manager). Anti-Pop Rock. NEVER invent. Generate Facebook post: story-driven, 2-4 sentences, emoji, CTA. End: real music. real people.")
+with open(f"content/drafts/fb-{today}.md", "w") as f:
+    f.write(f"# Facebook Post\n\n**Date:** {today}\n\n{fb}")
+print(f"FB: {fb[:100]}...")
+
+# YouTube
+yt = generate("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock. NEVER invent. Generate YouTube description: Hook 150 chars, description 2-3 paragraphs, timestamps placeholder, links section, 10 SEO tags. End: real music. real people. real stories.")
+with open(f"content/drafts/yt-{today}.md", "w") as f:
+    f.write(f"# YouTube Description\n\n**Date:** {today}\n\n{yt}")
+print(f"YT: {yt[:100]}...")
+
+print("\n=== FILES CREATED ===")
+import subprocess
+subprocess.run(["ls", "-la", "content/drafts/"])
+print(f"\nView at: https://github.com/suzukistrayd/ai-head-office/tree/main/content/drafts")
+PYTHON
 
       - name: Commit and push
         run: |
