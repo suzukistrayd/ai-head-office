@@ -17,9 +17,10 @@ status: ACTIVE
 **Copyright:** © 2026 SS SUZUKI & STRAYD
 ---
 ## Brand Mission
-Create meaningful music, stories, archives, education, technology and entrepreneurial projects that encourage people to keep building, keep learning and keep creating throughout life.
+Create meaningful music, stories, archives, education, technology and entrepreneurial projects that encourage people to keep building, keep learning and keep playing great man-made rock music throughout life.
 ---
 ## Ecosystem
+
 | Project | Focus |
 |---------|-------|
 | **Martin Strayd** | Solo music, weekly releases, songwriting |
