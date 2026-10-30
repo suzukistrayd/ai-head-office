@@ -1,1 +1,50 @@
-
+[
+  {
+    "name": "Dahl Inference",
+    "url": "https://inference.dahl.global/chat",
+    "category": "PRIMARY",
+    "description": "AI Brain - MiniMax M2.7"
+  },
+  {
+    "name": "GitHub",
+    "url": "https://github.com/suzukistrayd",
+    "category": "PRIMARY",
+    "description": "Repo & Actions"
+  },
+  {
+    "name": "Google Colab",
+    "url": "https://colab.research.google.com",
+    "category": "PRIMARY",
+    "description": "Image Generation"
+  },
+  {
+    "name": "Gmail",
+    "url": "https://mail.google.com",
+    "category": "WORKFLOW",
+    "description": "Email"
+  },
+  {
+    "name": "Google Drive",
+    "url": "https://drive.google.com",
+    "category": "WORKFLOW",
+    "description": "Assets & Storage"
+  },
+  {
+    "name": "X / Twitter",
+    "url": "https://x.com/suzukistrayd",
+    "category": "WORKFLOW",
+    "description": "Social Media"
+  },
+  {
+    "name": "Documentation",
+    "url": "https://github.com/suzukistrayd/ai-alpha/wiki",
+    "category": "REFERENCE",
+    "description": "Knowledge Base"
+  },
+  {
+    "name": "Prompt Library",
+    "url": "https://github.com/suzukistrayd/ai-alpha/tree/main/knowledge",
+    "category": "REFERENCE",
+    "description": "Prompts & Templates"
+  }
+]
