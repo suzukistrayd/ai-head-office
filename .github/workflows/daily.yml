@@ -1,4 +1,4 @@
-name: Simple Post
+name: Daily Social
 
 on:
   workflow_dispatch:
@@ -14,22 +14,66 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Generate X
+      - name: Generate X post
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p content/drafts
-          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STOP THINKING. Output ONLY the final post. Nothing else. No explanations. No analysis. No labels. Just the text.\n\nSTRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. One X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
-            > /tmp/response.json
-          python3 -c "import json; open('content/drafts/x-$(date +%Y-%m-%d).md','w').write('# X Post\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
+          
+          python3 <<'PY'
+import datetime
+import json
+import os
+import re
+import urllib.request
+
+API_URL = "https://inference.dahl.global/v1/chat/completions"
+API_KEY = os.environ["DAHL_API_KEY"]
+MODEL = "MiniMaxAI/MiniMax-M2.7"
+
+def call_dahl(prompt):
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": "You are a social media manager. Return ONLY the post text. No explanations. No analysis. No code fences."},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 1000,
+    }
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(API_URL, data=data, headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        result = json.loads(resp.read().decode("utf-8"))
+    return result["choices"][0]["message"]["content"].strip()
+
+def normalize(content):
+    for old, new in {"\u2014": "-", "\u2013": "-", "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}.items():
+        content = content.replace(old, new)
+    return content
+
+def validate(content):
+    if re.search(r"^\s*```", content, re.MULTILINE):
+        raise ValueError("Output contains code fence")
+    return content
+
+knowledge = open("knowledge/brand/strayd.md").read()
+prompt = f"{knowledge}\n\nWrite ONE X post for STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Under 280 chars. Rock vibe. 2-3 hashtags. Return ONLY the post."
+raw = call_dahl(prompt)
+content = normalize(validate(raw))
+t = datetime.date.today().isoformat()
+with open(f"content/drafts/x-{t}.md", "w") as f:
+    f.write(f"# X Post\n\n{content}\n")
+print("Done:", content[:80])
+PY
 
       - name: Commit
+        shell: bash
         run: |
           git config user.name "bot"
           git config user.email "bot@strayd.com"
           git add -A
-          git commit -m "x post"
+          git commit -m "daily"
           git push origin main
