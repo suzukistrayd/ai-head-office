@@ -15,78 +15,94 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
       
-      - name: Create folders with placeholder files
+      - name: Create INPUT folder
         run: |
-          # INPUT folder
           mkdir -p INPUT/templates
-          echo "# INPUT\nDump files here for processing" > INPUT/README.md
-          echo "# INTAKE AGENT\nProcesses incoming files" > INPUT/INTAKE-Agent.md
-          echo "# Inbox\nUnsorted notes" > INPUT/inbox.md
-          echo "# Random Note Template" > INPUT/templates/random-note.md
-          echo "# Story Fragment Template" > INPUT/templates/story-fragment.md
-          echo "# Idea Dump Template" > INPUT/templates/idea-dump.md
-          
-          # Characters
+          printf '# INPUT\nDump files here\n' > INPUT/README.md
+          printf '# INTAKE AGENT\n' > INPUT/INTAKE-Agent.md
+          printf '# Inbox\nUnsorted notes\n' > INPUT/inbox.md
+          printf '# Random Note\n' > INPUT/templates/random-note.md
+          printf '# Story Fragment\n' > INPUT/templates/story-fragment.md
+          printf '# Idea Dump\n' > INPUT/templates/idea-dump.md
+          echo "INPUT done"
+
+      - name: Create characters folders
+        run: |
           mkdir -p characters/suzuki/headshots
           mkdir -p characters/martin-strayd/headshots
-          echo "# SUZUKI\nMedia Manager - Thai-Japanese, 36" > characters/suzuki/-index.md
-          echo "# Bio" > characters/suzuki/bio.md
-          echo "# Visual Rules" > characters/suzuki/visual-rules.md
-          echo "# Wardrobe" > characters/suzuki/wardrobe.md
-          echo "# Story" > characters/suzuki/story.md
-          echo "# Voice" > characters/suzuki/voice.md
-          echo "# Headshots\nPlace approved headshots here" > characters/suzuki/headshots/-placeholders.md
-          echo "# MARTIN STRAYD\nRock Musician - Australian, 55" > characters/martin-strayd/-index.md
-          echo "# Bio" > characters/martin-strayd/bio.md
-          echo "# Story" > characters/martin-strayd/story.md
-          echo "# Voice" > characters/martin-strayd/voice.md
-          echo "# Headshots\nPlace approved headshots here" > characters/martin-strayd/headshots/-placeholders.md
-          
-          # mascot-maker
+          printf '# SUZUKI\nMedia Manager\n' > characters/suzuki/-index.md
+          printf '# Bio\n' > characters/suzuki/bio.md
+          printf '# Visual Rules\n' > characters/suzuki/visual-rules.md
+          printf '# Wardrobe\n' > characters/suzuki/wardrobe.md
+          printf '# Story\n' > characters/suzuki/story.md
+          printf '# Voice\n' > characters/suzuki/voice.md
+          printf '# Headshots\n' > characters/suzuki/headshots/-placeholders.md
+          printf '# MARTIN STRAYD\nRock Musician\n' > characters/martin-strayd/-index.md
+          printf '# Bio\n' > characters/martin-strayd/bio.md
+          printf '# Story\n' > characters/martin-strayd/story.md
+          printf '# Voice\n' > characters/martin-strayd/voice.md
+          printf '# Headshots\n' > characters/martin-strayd/headshots/-placeholders.md
+          echo "Characters done"
+
+      - name: Create mascot-maker
+        run: |
           mkdir -p mascot-maker/approved-mascots
-          echo "# Mascot Prompt Builder" > mascot-maker/mascot-prompt-builder.md
-          echo "# Mascot Ideas" > mascot-maker/mascot-ideas.md
-          echo "# Approved Mascots" > mascot-maker/approved-mascots/README.md
-          
-          # strayd-stories
-          echo "# STRAYD Stories\nApproved stories" > strayd-stories/approved-stories.md
-          
-          # promotion-studio
+          printf '# Mascot Prompt Builder\n' > mascot-maker/mascot-prompt-builder.md
+          printf '# Mascot Ideas\n' > mascot-maker/mascot-ideas.md
+          printf '# Approved Mascots\n' > mascot-maker/approved-mascots/README.md
+          echo "Mascot done"
+
+      - name: Create strayd-stories
+        run: |
+          printf '# STRAYD Stories\n' > strayd-stories/approved-stories.md
+          echo "Stories done"
+
+      - name: Create promotion-studio
+        run: |
           mkdir -p promotion-studio/headshots/results
           mkdir -p promotion-studio/ecommerce/mockups
           mkdir -p promotion-studio/editorial-posters/templates
-          echo "# Headshots Workflow" > promotion-studio/headshots/workflow.md
-          echo "# Headshot Results" > promotion-studio/headshots/results/README.md
-          echo "# E-commerce Workflow" > promotion-studio/ecommerce/merch-workflow.md
-          echo "# Mockups" > promotion-studio/ecommerce/mockups/README.md
-          echo "# Poster Workflow" > promotion-studio/editorial-posters/poster-workflow.md
-          echo "# Templates" > promotion-studio/editorial-posters/templates/README.md
-          
-          # knowledge
+          printf '# Headshots Workflow\n' > promotion-studio/headshots/workflow.md
+          printf '# Results\n' > promotion-studio/headshots/results/README.md
+          printf '# E-commerce Workflow\n' > promotion-studio/ecommerce/merch-workflow.md
+          printf '# Mockups\n' > promotion-studio/ecommerce/mockups/README.md
+          printf '# Poster Workflow\n' > promotion-studio/editorial-posters/poster-workflow.md
+          printf '# Templates\n' > promotion-studio/editorial-posters/templates/README.md
+          echo "Promotion studio done"
+
+      - name: Create knowledge
+        run: |
           mkdir -p knowledge/brand
           mkdir -p knowledge/platforms
           mkdir -p knowledge/workflows
-          echo "# STRAYD Brand" > knowledge/brand/strayd.md
-          echo "# Generation Rules" > knowledge/brand/generation-rules.md
-          echo "# Social Priority" > knowledge/platforms/social-priority.md
-          echo "# Content Pipeline" > knowledge/workflows/content-pipeline.md
-          echo "# Triggers" > knowledge/workflows/triggers.md
-          
-          # OUTPUT
+          printf '# STRAYD Brand\n' > knowledge/brand/strayd.md
+          printf '# Generation Rules\n' > knowledge/brand/generation-rules.md
+          printf '# Social Priority\n' > knowledge/platforms/social-priority.md
+          printf '# Content Pipeline\n' > knowledge/workflows/content-pipeline.md
+          printf '# Triggers\n' > knowledge/workflows/triggers.md
+          echo "Knowledge done"
+
+      - name: Create OUTPUT
+        run: |
           mkdir -p OUTPUT/social-posts
           mkdir -p OUTPUT/images
           mkdir -p OUTPUT/captions
-          echo "# Social Posts" > OUTPUT/social-posts/README.md
-          echo "# Images" > OUTPUT/images/README.md
-          echo "# Captions" > OUTPUT/captions/README.md
-          
-          # archive
+          printf '# Social Posts\n' > OUTPUT/social-posts/README.md
+          printf '# Images\n' > OUTPUT/images/README.md
+          printf '# Captions\n' > OUTPUT/captions/README.md
+          echo "OUTPUT done"
+
+      - name: Create archive
+        run: |
           mkdir -p archive/processed
           mkdir -p archive/rejected
-          echo "# Processed" > archive/processed/README.md
-          echo "# Rejected" > archive/rejected/README.md
-          
-          echo "=== Created structure ==="
+          printf '# Processed\n' > archive/processed/README.md
+          printf '# Rejected\n' > archive/rejected/README.md
+          echo "Archive done"
+
+      - name: Show structure
+        run: |
+          echo "=== ALL FILES ==="
           find . -type f | grep -v ".git" | sort
 
       - name: Commit and push
@@ -95,5 +111,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git status
-          git commit -m "Create full folder structure with placeholders"
+          git commit -m "Create full folder structure"
           git push
