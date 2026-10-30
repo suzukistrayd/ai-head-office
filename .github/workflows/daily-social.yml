@@ -14,98 +14,35 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Load knowledge
-        run: |
-          cat knowledge/brand/strayd.md > /tmp/brand.txt
-          cat characters/suzuki/-index.md >> /tmp/brand.txt
-          cat characters/martin-strayd/-index.md >> /tmp/brand.txt
-          echo "Loaded"
+      - name: Setup
+        run: pip install requests -q
 
-      - name: Generate X
+      - name: Generate posts
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          DATE=$(date +%Y-%m-%d)
-          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a social media manager. Output ONLY the post text. No explanations. No labels. No analysis. Just the post.\"},{\"role\":\"user\",\"content\":\"$(cat /tmp/brand.txt)\n\nWrite ONE X post. Rock vibe. Under 280 chars. 2-3 hashtags.\"}]}" \
-            > /tmp/x_raw.txt
-          # Extract just the text
-          python3 -c "
-import json
-with open('/tmp/x_raw.txt') as f:
-    data = json.load(f)
-content = data['choices'][0]['message']['content'].strip()
-with open('content/drafts/x-$DATE.md', 'w') as f:
-    f.write('# X Post\n\n' + content)
-print('X:', content[:80])
-"
+          python3 << 'PYEOF'
+import os, requests, json
+from datetime import date
 
-      - name: Generate IG
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a social media manager. Output ONLY the caption text. No explanations. No labels. Just the caption.\"},{\"role\":\"user\",\"content\":\"$(cat /tmp/brand.txt)\n\nWrite ONE Instagram caption. Hook first. 5 hashtags.\"}]}" \
-            > /tmp/ig_raw.txt
-          python3 -c "
-import json
-with open('/tmp/ig_raw.txt') as f:
-    data = json.load(f)
-content = data['choices'][0]['message']['content'].strip()
-with open('content/drafts/ig-$DATE.md', 'w') as f:
-    f.write('# Instagram Caption\n\n' + content)
-print('IG:', content[:80])
-"
+api_key = os.environ["DAHL_API_KEY"]
+url = "https://inference.dahl.global/v1/chat/completions"
+headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-      - name: Generate TT
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a social media manager. Output ONLY the script. No explanations. No labels. Just the script.\"},{\"role\":\"user\",\"content\":\"$(cat /tmp/brand.txt)\n\nWrite TikTok script. Hook 3sec. Story. CTA.\"}]}" \
-            > /tmp/tt_raw.txt
-          python3 -c "
-import json
-with open('/tmp/tt_raw.txt') as f:
-    data = json.load(f)
-content = data['choices'][0]['message']['content'].strip()
-with open('content/drafts/tt-$DATE.md', 'w') as f:
-    f.write('# TikTok Script\n\n' + content)
-print('TT:', content[:80])
-"
+def post(msg):
+    r = requests.post(url, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": msg}]}, headers=headers, timeout=60)
+    return r.json()["choices"][0]["message"]["content"]
 
-      - name: Generate FB
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          DATE=$(date +%Y-%m-%d)
-          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer $DAHL_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "{\"model\":\"MiniMaxAI/MiniMax-M2.7\",\"messages\":[{\"role\":\"system\",\"content\":\"You are a social media manager. Output ONLY the post. No explanations. No labels. Just the post.\"},{\"role\":\"user\",\"content\":\"$(cat /tmp/brand.txt)\n\nWrite Facebook post. Story. Emoji. CTA.\"}]}" \
-            > /tmp/fb_raw.txt
-          python3 -c "
-import json
-with open('/tmp/fb_raw.txt') as f:
-    data = json.load(f)
-content = data['choices'][0]['message']['content'].strip()
-with open('content/drafts/fb-$DATE.md', 'w') as f:
-    f.write('# Facebook Post\n\n' + content)
-print('FB:', content[:80])
-"
+t = date.today().isoformat()
+os.makedirs("content/drafts", exist_ok=True)
 
-      - name: Show results
-        run: |
-          echo "=== FILES CREATED ==="
-          ls -la content/drafts/
+open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write ONE X post. Under 280 chars. Rock. 2-3 hashtags. Output ONLY the post text."))
+open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write ONE Instagram caption. Hook first. 5 hashtags. Output ONLY the caption."))
+open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write TikTok script. Hook 3sec. Story. CTA. Output ONLY the script."))
+open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Facebook post. Story. Emoji. CTA. Output ONLY the post."))
+
+print("Done:", os.listdir("content/drafts"))
+PYEOF
 
       - name: Commit
         run: |
