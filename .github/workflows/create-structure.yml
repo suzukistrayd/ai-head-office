@@ -13,8 +13,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          repository: suzukistrayd/ai-head-office
       
-      - name: Create all folders
+      - name: Create folders
         run: |
           mkdir -p INPUT/templates
           mkdir -p characters/suzuki/headshots
@@ -33,14 +34,13 @@ jobs:
           mkdir -p archive/processed
           mkdir -p archive/rejected
           
-          echo "=== Folders created ==="
-          find . -type d | grep -v ".git" | sort
+          echo "=== Created folders ==="
+          find . -type d | grep -v ".git"
 
-      - name: Commit folders
+      - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git status
-          git commit -m "Create folder structure $(date)"
+          git commit -m "Create folder structure"
           git push
