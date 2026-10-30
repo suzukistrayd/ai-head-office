@@ -17,29 +17,37 @@ jobs:
       - name: Setup
         run: pip install requests -q
 
-      - name: Generate posts
+      - name: Generate posts with knowledge
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           python3 << 'PYEOF'
-import os, requests, json
+import os, requests
 from datetime import date
+
+# READ KNOWLEDGE FILES FIRST
+brand = open("knowledge/brand/strayd.md").read()
+suzuki = open("characters/suzuki/-index.md").read()
+martin = open("characters/martin-strayd/-index.md").read()
+
+# BUILD CONTEXT
+context = brand + "\n" + suzuki + "\n" + martin
 
 api_key = os.environ["DAHL_API_KEY"]
 url = "https://inference.dahl.global/v1/chat/completions"
 headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-def post(msg):
-    r = requests.post(url, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": msg}]}, headers=headers, timeout=60)
+def gen(prompt):
+    r = requests.post(url, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": context + "\n\n" + prompt}]}, headers=headers, timeout=60)
     return r.json()["choices"][0]["message"]["content"]
 
 t = date.today().isoformat()
 os.makedirs("content/drafts", exist_ok=True)
 
-open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write ONE X post. Under 280 chars. Rock. 2-3 hashtags. Output ONLY the post text."))
-open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write ONE Instagram caption. Hook first. 5 hashtags. Output ONLY the caption."))
-open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write TikTok script. Hook 3sec. Story. CTA. Output ONLY the script."))
-open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + post("STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Facebook post. Story. Emoji. CTA. Output ONLY the post."))
+open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + gen("Write ONE X post. Under 280 chars. Rock. 2-3 hashtags. Output ONLY the post."))
+open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + gen("Write ONE Instagram caption. Hook first. 5 hashtags. Output ONLY the caption."))
+open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + gen("Write TikTok script. Hook 3sec. Story. CTA. Output ONLY the script."))
+open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + gen("Write Facebook post. Story. Emoji. CTA. Output ONLY the post."))
 
 print("Done:", os.listdir("content/drafts"))
 PYEOF
