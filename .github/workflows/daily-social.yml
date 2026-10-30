@@ -1,4 +1,4 @@
-name: Daily Social Posts - All Platforms
+name: Daily Social Posts - Full Knowledge
 
 on:
   schedule:
@@ -6,91 +6,109 @@ on:
   workflow_dispatch:
 
 jobs:
-  generate-content:
+  generate:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: suzukistrayd/ai-head-office
       
-      - name: Create directories
-        run: mkdir -p content/drafts
+      - name: Load Knowledge Base
+        id: knowledge
+        run: |
+          echo "=== LOADING KNOWLEDGE ==="
+          if [ -f knowledge/brand/strayd.md ]; then
+            echo "✅ Brand knowledge found"
+            cat knowledge/brand/strayd.md
+          else
+            echo "❌ No brand knowledge"
+          fi
+          echo "---"
+          if [ -f characters/suzuki/-index.md ]; then
+            echo "✅ Suzuki found"
+          fi
+          if [ -f characters/martin-strayd/-index.md ]; then
+            echo "✅ Martin found"
+          fi
 
-      - name: Generate X Post
+      - name: Generate X Post (Rock, Sharp, 280 chars)
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
+          PROMPT="You are social media manager for STRAYD featuring Martin Strayd (Australian rock musician, 55) and Suzuki (Thai-Japanese media manager, 36). Brand: Anti-Pop Rock. Message: 'Real music. Real people. Real lives. No waiting for permission.' Style: Witty, sharp, rock and roll attitude. NEVER invent events, shows, releases. Use only verified brand info. Generate 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Make it punchy."
+          
           response=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission. Witty and sharp."}, {"role": "user", "content": "Generate 1 X/Twitter post. Under 280 chars. Rock vibe. Include 2-3 hashtags. End with energy."}]
-            }')
+            -d "{\"model\": \"MiniMaxAI/MiniMax-M2.7\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]}")
+          
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/x-$(date +%Y-%m-%d).txt
           echo "=== X POST ===" && cat content/drafts/x-$(date +%Y-%m-%d).txt
 
-      - name: Generate Instagram Caption
+      - name: Generate Instagram (Hook + Story + Hashtags)
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
+          PROMPT="STRAYD featuring Martin Strayd (Australian rock guitarist, songwriter) and Suzuki (Thai-Japanese media manager). Anti-Pop Rock. 'Real music. Real people. Real lives. No waiting for permission.' NEVER invent releases or shows. Generate 1 Instagram caption. Structure: HOOK first line (bold/attention), BODY 2-3 sentences (story-driven, rock energy), 5 relevant hashtags. End with: real music. real people."
+          
           response=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll attitude. Anti-pop. Real music. Real people. Real lives. No waiting for permission."}, {"role": "user", "content": "Generate 1 Instagram caption. Hook line first. 2-3 sentences. 5 relevant hashtags. End with real music. real people."}]
-            }')
+            -d "{\"model\": \"MiniMaxAI/MiniMax-M2.7\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]}")
+          
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/ig-$(date +%Y-%m-%d).txt
           echo "=== INSTAGRAM ===" && cat content/drafts/ig-$(date +%Y-%m-%d).txt
 
-      - name: Generate TikTok Script
+      - name: Generate TikTok (Hook + Story + 60 sec)
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
+          PROMPT="STRAYD social media. Martin Strayd (Australian rock, 55, guitarist, songwriter). Suzuki (media manager, 36). Anti-Pop Rock. NEVER invent. Generate TikTok script: HOOK first 3 seconds (grab attention), STORY ARC (build 30-45 sec), ENDING (call to action). 3-5 hashtags. Rock vibe. Under 60 seconds total."
+          
           response=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll. Witty. Short form video."}, {"role": "user", "content": "Generate 1 TikTok script. Hook first 3 seconds. Story arc. 3-5 hashtags. Under 60 seconds."}]
-            }')
+            -d "{\"model\": \"MiniMaxAI/MiniMax-M2.7\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]}")
+          
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/tt-$(date +%Y-%m-%d).txt
           echo "=== TIKTOK ===" && cat content/drafts/tt-$(date +%Y-%m-%d).txt
 
-      - name: Generate Facebook Post
+      - name: Generate Facebook (Story-driven, Community)
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
+          PROMPT="STRAYD. Martin Strayd (Australian rock, independent musician). Suzuki (band manager). Anti-Pop Rock. NEVER invent. Generate Facebook post: Story-driven, rock vibe, community feel, 2-4 sentences, emoji适量, include call to action. End with real music. real people."
+          
           response=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "system", "content": "You are Suzuki social media manager for STRAYD. Rock and roll. Story-driven. Community focus."}, {"role": "user", "content": "Generate 1 Facebook post. Story-driven. Rock vibe. Include call to action. 2-4 sentences. Emoji适量."}]
-            }')
+            -d "{\"model\": \"MiniMaxAI/MiniMax-M2.7\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]}")
+          
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/fb-$(date +%Y-%m-%d).txt
           echo "=== FACEBOOK ===" && cat content/drafts/fb-$(date +%Y-%m-%d).txt
 
-      - name: Generate YouTube Description
+      - name: Generate YouTube (SEO optimized, longer)
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
+          PROMPT="STRAYD featuring Martin Strayd & Suzuki. Anti-Pop Rock. NEVER invent. Generate YouTube video description: HOOK first 150 chars (make them click), MAIN DESCRIPTION 2-3 paragraphs (story, what to expect), TIMESTAMPS placeholder section, LINKS section (website, socials), SEO TAGS (10 comma-separated keywords). End: real music. real people. real stories."
+          
           response=$(curl -s https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer $DAHL_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "MiniMaxAI/MiniMax-M2.7",
-              "messages": [{"role": "system", "content": "You are Suzuki for STRAYD. YouTube SEO expert."}, {"role": "user", "content": "Generate YouTube description. Hook first 150 chars. 10 SEO tags. End real music real people."}]
-            }')
+            -d "{\"model\": \"MiniMaxAI/MiniMax-M2.7\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT\"}]}")
+          
           echo "$response" | jq -r '.choices[0].message.content' > content/drafts/yt-$(date +%Y-%m-%d).txt
           echo "=== YOUTUBE ===" && cat content/drafts/yt-$(date +%Y-%m-%d).txt
 
-      - name: Commit and Push
+      - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
-          git commit -m "Daily content $(date +%Y-%m-%d)" || echo "Nothing to commit"
-          git push origin main || echo "Push failed - check permissions"
+          git commit -m "Daily content $(date +%Y-%m-%d)" || echo "No changes"
+          git push || echo "Push done"
