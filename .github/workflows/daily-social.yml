@@ -20,25 +20,33 @@ jobs:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           pip install requests -q
-          python3 <<EOF
+          python3 <<'PYEOF'
 import os, requests
 from datetime import date
+
+print("=== STEP 1: Loading knowledge files ===")
 
 # Load knowledge
 brand = ""
 if os.path.exists('knowledge/brand/strayd.md'):
     brand = open('knowledge/brand/strayd.md').read()
-    print("Brand loaded:", len(brand), "chars")
+    print(f"✅ Brand loaded: {len(brand)} chars")
+else:
+    print("❌ Brand file NOT found")
 
 suzuki = ""
 if os.path.exists('characters/suzuki/-index.md'):
     suzuki = open('characters/suzuki/-index.md').read()
-    print("Suzuki loaded:", len(suzuki), "chars")
+    print(f"✅ Suzuki loaded: {len(suzuki)} chars")
+else:
+    print("❌ Suzuki file NOT found")
 
 martin = ""
 if os.path.exists('characters/martin-strayd/-index.md'):
     martin = open('characters/martin-strayd/-index.md').read()
-    print("Martin loaded:", len(martin), "chars")
+    print(f"✅ Martin loaded: {len(martin)} chars")
+else:
+    print("❌ Martin file NOT found")
 
 # Build context
 context = f"""STRAYD BRAND INFO:
@@ -50,28 +58,61 @@ SUZUKI INFO:
 MARTIN STRAYD INFO:
 {martin}"""
 
-a=os.environ['DAHL_API_KEY']
-u='https://inference.dahl.global/v1/chat/completions'
-h={'Authorization':f'Bearer {a}','Content-Type':'application/json'}
-def g(m):
- r=requests.post(u,json={'model':'MiniMaxAI/MiniMax-M2.7','messages':[{'role':'user','content':context[:8000]+'\n\n'+m}]},headers=h,timeout=30)
- return r.json()['choices'][0]['message']['content']
+print(f"\n=== STEP 2: Total context: {len(context)} chars ===")
 
-t=date.today().isoformat()
-os.makedirs('content/drafts',exist_ok=True)
+# Setup API
+a = os.environ['DAHL_API_KEY']
+u = 'https://inference.dahl.global/v1/chat/completions'
+h = {'Authorization': f'Bearer {a}', 'Content-Type': 'application/json'}
 
-open(f'content/drafts/x-{t}.md','w').write('# X Post\n\n'+g('Write 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Witty.'))
-open(f'content/drafts/ig-{t}.md','w').write('# Instagram Caption\n\n'+g('Write 1 Instagram caption. Hook first line. 5 hashtags.'))
-open(f'content/drafts/tt-{t}.md','w').write('# TikTok Script\n\n'+g('Write TikTok script. Hook 3sec, story arc, ending CTA, 3-5 hashtags.'))
-open(f'content/drafts/fb-{t}.md','w').write('# Facebook Post\n\n'+g('Write Facebook post. Story-driven. Emoji. Call to action.'))
+def gen(prompt):
+    try:
+        print(f"Calling Dahl with prompt: {prompt[:50]}...")
+        r = requests.post(u, json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': context[:8000] + '\n\n' + prompt}]}, headers=h, timeout=60)
+        result = r.json()
+        if 'choices' in result:
+            return result['choices'][0]['message']['content']
+        else:
+            print(f"❌ API Error: {result}")
+            return "ERROR: " + str(result)
+    except Exception as e:
+        print(f"❌ Exception: {e}")
+        return f"ERROR: {e}"
 
-print('\nFiles:', os.listdir('content/drafts'))
-EOF
+t = date.today().isoformat()
+os.makedirs('content/drafts', exist_ok=True)
+print(f"\n=== STEP 3: Generating content for {t} ===")
+
+# Generate all 4 platforms
+x = gen('Write 1 X/Twitter post. Under 280 chars. Rock vibe. 2-3 hashtags. Witty.')
+print(f"✅ X generated: {len(x)} chars")
+open(f'content/drafts/x-{t}.md', 'w').write(f'# X Post\n\n{x}')
+
+ig = gen('Write 1 Instagram caption. Hook first line. 5 hashtags.')
+print(f"✅ IG generated: {len(ig)} chars")
+open(f'content/drafts/ig-{t}.md', 'w').write(f'# Instagram Caption\n\n{ig}')
+
+tt = gen('Write TikTok script. Hook 3sec, story arc, ending CTA, 3-5 hashtags.')
+print(f"✅ TT generated: {len(tt)} chars")
+open(f'content/drafts/tt-{t}.md', 'w').write(f'# TikTok Script\n\n{tt}')
+
+fb = gen('Write Facebook post. Story-driven. Emoji. Call to action.')
+print(f"✅ FB generated: {len(fb)} chars")
+open(f'content/drafts/fb-{t}.md', 'w').write(f'# Facebook Post\n\n{fb}')
+
+print(f"\n=== STEP 4: Files created ===")
+for f in os.listdir('content/drafts'):
+    size = os.path.getsize(f'content/drafts/{f}')
+    print(f"  {f} ({size} bytes)")
+
+print(f"\nView at: https://github.com/suzukistrayd/ai-head-office/tree/main/content/drafts")
+PYEOF
 
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/drafts/
+          git status
           git commit -m "Social content $(date +%Y-%m-%d)"
           git push origin main
