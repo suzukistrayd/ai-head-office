@@ -14,6 +14,36 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
+      - name: Read all knowledge files
+        id: read_knowledge
+        run: |
+          echo "=== READING KNOWLEDGE ==="
+          
+          echo "--- BRAND ---"
+          cat knowledge/brand/strayd.md
+          cat knowledge/brand/generation-rules.md
+          
+          echo "--- PLATFORMS ---"
+          cat knowledge/platforms/social-priority.md
+          
+          echo "--- WORKFLOWS ---"
+          cat knowledge/workflows/content-pipeline.md
+          cat knowledge/workflows/triggers.md
+          
+          echo "--- SUZUKI ---"
+          cat characters/suzuki/-index.md
+          cat characters/suzuki/bio.md
+          cat characters/suzuki/voice.md
+          cat characters/suzuki/story.md
+          
+          echo "--- MARTIN ---"
+          cat characters/martin-strayd/-index.md
+          cat characters/martin-strayd/bio.md
+          cat characters/martin-strayd/voice.md
+          cat characters/martin-strayd/story.md
+          
+          echo "=== KNOWLEDGE LOADED ==="
+
       - name: Generate social posts
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
@@ -23,27 +53,49 @@ jobs:
 import os, requests
 from datetime import date
 
-brand = open("knowledge/brand/strayd.md").read()
-suzuki = open("characters/suzuki/-index.md").read()
-martin = open("characters/martin-strayd/-index.md").read()
-ctx = brand + "\n" + suzuki + "\n" + martin
+# READ ALL KNOWLEDGE FILES
+files = [
+    "knowledge/brand/strayd.md",
+    "knowledge/brand/generation-rules.md", 
+    "knowledge/platforms/social-priority.md",
+    "knowledge/workflows/content-pipeline.md",
+    "knowledge/workflows/triggers.md",
+    "characters/suzuki/-index.md",
+    "characters/suzuki/bio.md",
+    "characters/suzuki/voice.md",
+    "characters/suzuki/story.md",
+    "characters/martin-strayd/-index.md",
+    "characters/martin-strayd/bio.md",
+    "characters/martin-strayd/voice.md",
+    "characters/martin-strayd/story.md"
+]
+
+knowledge = ""
+for f in files:
+    try:
+        knowledge += open(f).read() + "\n\n"
+    except:
+        pass
+
+print(f"Loaded {len(knowledge)} chars of knowledge")
 
 api = os.environ["DAHL_API_KEY"]
 url = "https://inference.dahl.global/v1/chat/completions"
 h = {"Authorization": "Bearer " + api}
 
-def gen(m):
-    r = requests.post(url, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": ctx + "\n\n" + m}]}, headers=h, timeout=60)
+def gen(prompt):
+    r = requests.post(url, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": knowledge + "\n\n" + prompt}]}, headers=h, timeout=60)
     return r.json()["choices"][0]["message"]["content"]
 
 t = date.today().isoformat()
 os.makedirs("content/drafts", exist_ok=True)
 
-open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + gen("Write ONE X post. Under 280 chars. Rock. 2-3 hashtags. Output ONLY the post."))
-open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + gen("Write ONE Instagram caption. Hook first. 5 hashtags. Output ONLY the caption."))
-open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + gen("Write TikTok script. Hook. Story. CTA. Output ONLY the script."))
-open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + gen("Write Facebook post. Story. Emoji. CTA. Output ONLY the post."))
-print("Done")
+open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + gen("Write ONE X post using the knowledge provided. Follow the brand voice and social priority rules. Output ONLY the post."))
+open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + gen("Write ONE Instagram caption using the knowledge. Follow platform rules. Output ONLY the caption."))
+open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + gen("Write TikTok script using the knowledge. Follow content pipeline. Output ONLY the script."))
+open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + gen("Write Facebook post using the knowledge. Follow workflow triggers. Output ONLY the post."))
+
+print("Done:", os.listdir("content/drafts"))
 PYEOF
 
       - name: Commit
