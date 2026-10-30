@@ -15,57 +15,41 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Generate content
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+      - name: Create Python script
         run: |
-          pip install requests -q
-          python3 <<'PYEOF'
+          cat > generate.py << 'ENDSCRIPT'
 import os, requests
 from datetime import date
 
-# Load ONLY the verified knowledge from files
 brand = open('knowledge/brand/strayd.md').read() if os.path.exists('knowledge/brand/strayd.md') else ""
 suzuki = open('characters/suzuki/-index.md').read() if os.path.exists('characters/suzuki/-index.md') else ""
 martin = open('characters/martin-strayd/-index.md').read() if os.path.exists('characters/martin-strayd/-index.md') else ""
 
-# This is the ONLY truth - use ONLY this info
-TRUTH = f"""USE ONLY THIS INFORMATION - DO NOT ADD ANYTHING ELSE:
-{brand}
-{suzuki}
-{martin}
-
-IMPORTANT: Only use the facts above. Do not invent songs, shows, quotes, locations, or any information not in this text."""
+TRUTH = "USE ONLY THIS INFORMATION:\n" + brand + "\n" + suzuki + "\n" + martin + "\nDo not add any information not in this text."
 
 t = date.today().isoformat()
-os.makedirs('content/drafts', exist_ok=True)
+os.makedirs("content/drafts", exist_ok=True)
 
-a = os.environ['DAHL_API_KEY']
-u = 'https://inference.dahl.global/v1/chat/completions'
-h = {'Authorization': f'Bearer {a}', 'Content-Type': 'application/json'}
+a = os.environ["DAHL_API_KEY"]
+u = "https://inference.dahl.global/v1/chat/completions"
+h = {"Authorization": "Bearer " + a, "Content-Type": "application/json"}
 
 def gen(prompt):
-    r = requests.post(u, json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': TRUTH + '\n\n' + prompt}]}, headers=h, timeout=60)
-    return r.json()['choices'][0]['message']['content']
+    r = requests.post(u, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": TRUTH + "\n\n" + prompt}]}, headers=h, timeout=60)
+    return r.json()["choices"][0]["message"]["content"]
 
-# X Post - simple, no quotes
-x = gen('Write 1 X/Twitter post for STRAYD. Under 280 chars. Rock vibe. 2-3 hashtags. Make it punchy and energetic. Do not add quotes or made-up facts.')
-open(f'content/drafts/x-{t}.md', 'w').write(f'# X Post\n\n{x}')
+open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + gen("Write 1 X post. Under 280 chars. Rock vibe. 2-3 hashtags."))
+open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + gen("Write IG caption. Hook first. 5 hashtags."))
+open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + gen("TikTok script. Hook 3sec. Story arc. CTA."))
+open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + gen("FB post. Story. Emoji. CTA."))
 
-# Instagram - hook only
-ig = gen('Write 1 Instagram caption for STRAYD. Hook first line. 5 hashtags. Rock energy. No invented quotes or facts.')
-open(f'content/drafts/ig-{t}.md', 'w').write(f'# Instagram Caption\n\n{ig}')
+print("Done:", os.listdir("content/drafts"))
+ENDSCRIPT
 
-# TikTok - script format
-tt = gen('Write TikTok script for STRAYD. Hook 3sec, story arc, ending CTA, 3-5 hashtags. No made-up info.')
-open(f'content/drafts/tt-{t}.md', 'w').write(f'# TikTok Script\n\n{tt}')
-
-# Facebook - community
-fb = gen('Write Facebook post for STRAYD. Story-driven. Emoji. Call to action. No invented facts.')
-open(f'content/drafts/fb-{t}.md', 'w').write(f'# Facebook Post\n\n{fb}')
-
-print('Done:', os.listdir('content/drafts'))
-PYEOF
+      - name: Run Python
+        run: |
+          pip install requests -q
+          python3 generate.py
 
       - name: Commit
         run: |
