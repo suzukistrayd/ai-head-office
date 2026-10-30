@@ -1,0 +1,46 @@
+name: Create Folder Structure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-structure:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create all folders
+        run: |
+          mkdir -p INPUT/templates
+          mkdir -p characters/suzuki/headshots
+          mkdir -p characters/martin-strayd/headshots
+          mkdir -p mascot-maker/approved-mascots
+          mkdir -p strayd-stories
+          mkdir -p promotion-studio/headshots/results
+          mkdir -p promotion-studio/ecommerce/mockups
+          mkdir -p promotion-studio/editorial-posters/templates
+          mkdir -p knowledge/brand
+          mkdir -p knowledge/platforms
+          mkdir -p knowledge/workflows
+          mkdir -p OUTPUT/social-posts
+          mkdir -p OUTPUT/images
+          mkdir -p OUTPUT/captions
+          mkdir -p archive/processed
+          mkdir -p archive/rejected
+          
+          echo "=== Folders created ==="
+          find . -type d | grep -v ".git" | sort
+
+      - name: Commit folders
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git status
+          git commit -m "Create folder structure $(date)"
+          git push
