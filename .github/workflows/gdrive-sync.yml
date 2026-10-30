@@ -18,15 +18,21 @@ jobs:
         with:
           sparse-checkout: |
             .github
-            knowledge
+            INPUT
             characters
-            content
+            mascot-maker
+            strayd-stories
+            promotion-studio
+            knowledge
+            OUTPUT
+            archive
           sparse-checkout-cone-mode: false
 
-      - name: Install rclone
+      - name: Download rclone
         run: |
-          curl -sL https://rclone.org/install.sh | bash -s -- --user
-          ~/rclone-v1.75.2-linux-amd64/rclone version
+          wget -q https://github.com/rclone/rclone/releases/download/v1.75.2/rclone-v1.75.2-linux-amd64.zip
+          unzip -q rclone-v1.75.2-linux-amd64.zip
+          chmod +x rclone-v1.75.2-linux-amd64/rclone
 
       - name: Configure GDrive
         env:
@@ -39,25 +45,44 @@ jobs:
           scope = drive
           token = {"access_token":"","access_token_expiry":"2026-01-01T00:00:00Z","refresh_token":"$RCLONE_TOKEN","token_type":"Bearer"}
           EOF
-          ~/rclone-v1.75.2-linux-amd64/rclone lsd gdrive: --max-depth 1
+          ./rclone-v1.75.2-linux-amd64/rclone lsd gdrive: --max-depth 1
 
-      - name: Sync from GDrive
+      - name: Sync ALL folders from GDrive
         run: |
-          ~/rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/knowledge/ knowledge/ --update --verbose || true
-          ~/rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/characters/ characters/ --update --verbose || true
-          ~/rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/content/ content/ --update --verbose || true
+          echo "=== Syncing INPUT ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/INPUT/ INPUT/ --update --verbose || true
+          
+          echo "=== Syncing characters ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/characters/ characters/ --update --verbose || true
+          
+          echo "=== Syncing mascot-maker ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/mascot-maker/ mascot-maker/ --update --verbose || true
+          
+          echo "=== Syncing strayd-stories ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/strayd-stories/ strayd-stories/ --update --verbose || true
+          
+          echo "=== Syncing promotion-studio ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/promotion-studio/ promotion-studio/ --update --verbose || true
+          
+          echo "=== Syncing knowledge ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/knowledge/ knowledge/ --update --verbose || true
+          
+          echo "=== Syncing OUTPUT ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/OUTPUT/ OUTPUT/ --update --verbose || true
+          
+          echo "=== Syncing archive ==="
+          ./rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/archive/ archive/ --update --verbose || true
 
-      - name: Show files
+      - name: Show all synced files
         run: |
-          echo "=== Knowledge ==="
-          find knowledge -name "*.md" 2>/dev/null | head -10
-          echo "=== Characters ==="
-          find characters -name "*.md" 2>/dev/null | head -10
+          echo "=== ALL SYNCED FILES ==="
+          find . -type f \( -name "*.md" -o -name "*.txt" \) | grep -v ".git" | sort
 
       - name: Commit and push
         run: |
           git config user.name "GDrive Sync Bot"
           git config user.email "sync@strayd.com"
           git add -A
-          git commit -m "Sync from GDrive $(date)" || echo "No changes"
+          git status --short
+          git commit -m "Full sync from GDrive $(date)" || echo "No changes"
           git push origin main || echo "Push done"
