@@ -87,10 +87,11 @@ jobs:
           RETRY_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
 
           KNOWLEDGE_FILES = [
-              ("characters/martinstrayd.md", "MARTIN STRAYD"),
-              ("characters/suzuki.md", "SUZUKI"),
-              ("songarchive.md", "SONG ARCHIVE"),
-              ("brand-profile.md", "BRAND PROFILE"),
+              ("characters/martinstrayd.md", "MARTIN STRAYD — PRIORITY 1"),
+              ("characters/suzuki.md", "SUZUKI — PRIORITY 2"),
+              ("songarchive.md", "SONG ARCHIVE — PRIORITY 3"),
+              ("brand-profile.md", "BRAND PROFILE — PRIORITY 4"),
+              ("social-manager-prompt.md", "SOCIAL MANAGER PROMPT — REFERENCE"),
           ]
 
           DAYS = [
@@ -124,11 +125,35 @@ jobs:
           ]
 
           PLATFORM_HASHTAGS = {
-              "X": ["#STRAYD", "#MartinStrayd", "#RockMusic", "#Suzuki", "#Antipop", "#RockGuitar", "#NewMusic", "#MusicLife", "#Backstage", "#RockRoll", "#Straya", "#MusicianLife"],
-              "Facebook": ["STRAYD", "Martin Strayd", "Rock Music", "Suzuki", "Music Producer", "Antipop", "New Music", "Music Life", "Guitar Life", "Rock And Roll", "Indie Music", "Musician Life"],
-              "YouTube Community": ["#STRAYD", "#MartinStrayd", "#RockMusic", "#NewMusicFriday", "#Suzuki"],
-              "TikTok": ["#STRAYD", "#martinstrayd", "#rockmusic", "#straya", "#musicianlife", "#suzuki", "#newmusic", "#antipop", "#fyp", "#viral", "#australian", "#musicproducer"],
-              "Instagram": ["#STRAYD", "#MartinStrayd", "#RockMusic", "#Antipop", "#MusicProducer", "#RockGuitar", "#NewMusic", "#MusicLife", "#GuitarLife", "#RockAndRoll", "#IndieMusic", "#MusicianLife", "#StudioLife", "#GuitarPlayer", "#MusicIsLife"],
+              "X": [
+                  "#STRAYD", "#MartinStrayd", "#RockMusic",
+                  "#Suzuki", "#Antipop", "#RockGuitar",
+                  "#NewMusic", "#MusicLife", "#Backstage",
+                  "#RockRoll", "#Straya", "#MusicianLife"
+              ],
+              "Facebook": [
+                  "STRAYD", "Martin Strayd", "Rock Music",
+                  "Suzuki", "Music Producer", "Antipop",
+                  "New Music", "Music Life", "Guitar Life",
+                  "Rock And Roll", "Indie Music", "Musician Life"
+              ],
+              "YouTube Community": [
+                  "#STRAYD", "#MartinStrayd", "#RockMusic",
+                  "#NewMusicFriday", "#Suzuki"
+              ],
+              "TikTok": [
+                  "#STRAYD", "#martinstrayd", "#rockmusic",
+                  "#straya", "#musicianlife", "#suzuki",
+                  "#newmusic", "#antipop", "#fyp", "#viral",
+                  "#australian", "#musicproducer"
+              ],
+              "Instagram": [
+                  "#STRAYD", "#MartinStrayd", "#RockMusic",
+                  "#Antipop", "#MusicProducer", "#RockGuitar",
+                  "#NewMusic", "#MusicLife", "#GuitarLife",
+                  "#RockAndRoll", "#IndieMusic", "#MusicianLife",
+                  "#StudioLife", "#GuitarPlayer", "#MusicIsLife"
+              ],
           }
 
           def log(message):
@@ -145,21 +170,34 @@ jobs:
                   if not path.is_file():
                       fail(f"Knowledge file not found: {filename}")
                   content = path.read_text(encoding="utf-8").strip()
-                  # Truncate overly massive blocks to ensure prompt fits comfortably within token limits
-                  if len(content) > 12000:
-                      content = content[:12000] + "\n[Content truncated for length]"
-                  parts.append(f"=== {label} ===\n{content}\n")
+                  if not content:
+                      fail(f"Knowledge file is empty: {filename}")
+                  parts.append(
+                      f"\n\n===== BEGIN {label} [{filename}] =====\n"
+                      f"{content}\n"
+                      f"===== END {label} [{filename}] =====\n"
+                  )
+                  log(f"Loaded knowledge: {filename} ({len(content)} characters)")
               return "\n".join(parts)
 
           def current_week():
               today = datetime.datetime.now(datetime.timezone.utc).date()
               monday = today - datetime.timedelta(days=today.weekday())
-              return [monday + datetime.timedelta(days=i) for i in range(7)]
+              return [
+                  monday + datetime.timedelta(days=i)
+                  for i in range(7)
+              ]
 
           def normalize_dashes(content):
               replacements = {
-                  '\u2014': '-', '\u2013': '-', '\u2212': '-',
-                  '\u2018': "'", '\u2019': "'", '\u201c': '"', '\u201d': '"', '\u2026': '...'
+                  '\u2014': '-',
+                  '\u2013': '-',
+                  '\u2212': '-',
+                  '\u2018': "'",
+                  '\u2019': "'",
+                  '\u201c': '"',
+                  '\u201d': '"',
+                  '\u2026': '...',
               }
               result = content
               for old, new in replacements.items():
@@ -167,23 +205,47 @@ jobs:
               return result
 
           def build_prompt(knowledge, week_dates):
-              date_lines = "\n".join(f"{day}: {date.isoformat()}" for day, date in zip(DAYS, week_dates))
+              date_lines = "\n".join(
+                  f"{day}: {date.isoformat()}"
+                  for day, date in zip(DAYS, week_dates)
+              )
               section_lines = "\n".join(f"### {s}" for s in SECTIONS)
-              
+
+              hashtag_ref = []
+              for platform, tags in PLATFORM_HASHTAGS.items():
+                  hashtag_ref.append(f"\n{platform}:")
+                  hashtag_ref.append("  " + " ".join(tags))
+              hashtag_reference = "\n".join(hashtag_ref)
+
               return f"""
-          You are the STRAYD Content Director.
-          Generate a complete weekly social content calendar for all seven days in order:
+          You are the STRAYD Content Director. You MUST output Markdown only.
+          Do NOT wrap your response in markdown code blocks (```markdown ... ```).
+          Do NOT write any introduction, commentary, or summary.
+
+          Generate content for all 7 days in exact order:
           {date_lines}
 
-          Factual rules: Use only facts from the supplied knowledge. No em dashes (- only). No smart quotes.
-          
-          Every day must start with:
-          ## DayName — YYYY-MM-DD
-          
-          Followed by these 7 exact headings:
+          STRICT DAY HEADER FORMAT:
+          You MUST start each day with this EXACT heading format:
+          ## DayName - YYYY-MM-DD
+
+          Example:
+          ## Monday - {week_dates[0].isoformat()}
+
+          Within EVERY day, include these 7 level-3 headings in this exact order:
           {section_lines}
 
-          SUPPLIED KNOWLEDGE:
+          FACTUAL RULES:
+          - Never invent songs, song titles, releases, release dates or credits.
+          - Never invent biography, personal history or achievements.
+          - Use only facts supported by the knowledge files below.
+          - NEVER use em dashes. Use plain hyphens only: -
+          - NEVER use smart quotes. Use plain quotes only: ' and "
+
+          PLATFORM HASHTAG REFERENCE:
+          {hashtag_reference}
+
+          SUPPLIED KNOWLEDGE FILES:
           {knowledge}
           """.strip()
 
@@ -191,11 +253,17 @@ jobs:
               payload = {
                   "model": MODEL,
                   "messages": [
-                      {"role": "system", "content": "You are the STRAYD Content Director. Return valid markdown only."},
+                      {
+                          "role": "system",
+                          "content": (
+                              "You are the STRAYD Content Director. "
+                              "Return only the raw requested Markdown without code fences."
+                          ),
+                      },
                       {"role": "user", "content": prompt},
                   ],
                   "temperature": 0.7,
-                  "max_tokens": 4000,
+                  "max_tokens": 5000,
               }
 
               request_data = json.dumps(payload).encode("utf-8")
@@ -214,59 +282,106 @@ jobs:
 
                   try:
                       log(f"API Request attempt {attempt}/{ATTEMPTS}...")
-                      with urllib.request.urlopen(request, timeout=180) as response:
+                      with urllib.request.urlopen(request, timeout=240) as response:
                           raw = response.read().decode("utf-8")
                           data = json.loads(raw)
 
                       choices = data.get("choices") or []
                       if not choices:
-                          raise ValueError("No choices returned.")
+                          raise ValueError("DAHL response contains no choices.")
 
                       content = choices[0].get("message", {}).get("content")
                       if not isinstance(content, str) or not content.strip():
-                          raise ValueError("Empty content returned.")
+                          raise ValueError("DAHL returned empty content.")
 
                       return content.strip()
 
-                  except Exception as exc:
-                      log(f"Attempt {attempt} failed: {exc}")
+                  except urllib.error.HTTPError as exc:
+                      code = exc.code
+                      try:
+                          body = exc.read().decode("utf-8", errors="replace")
+                      except Exception:
+                          body = ""
+
+                      log(f"DAHL HTTP error {code}: {body[:300]}")
+                      if code not in RETRY_CODES:
+                          fail(f"Non-retryable HTTP error {code}.")
+
                       if attempt == ATTEMPTS:
-                          fail("All API attempts failed.")
-                      time.sleep(RETRY_DELAYS[attempt - 1])
+                          fail(f"HTTP {code} persisted after {ATTEMPTS} attempts.")
+
+                  except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError) as exc:
+                      log(f"DAHL connection error: {type(exc).__name__}: {exc}")
+                      if attempt == ATTEMPTS:
+                          fail(f"Request failed after {ATTEMPTS} attempts.")
+
+                  delay = RETRY_DELAYS[attempt - 1]
+                  log(f"Retrying in {delay} seconds...")
+                  time.sleep(delay)
+
+              fail("DAHL request ended unexpectedly.")
 
           def parse_and_validate(markdown, week_dates):
               if not markdown.strip():
-                  fail("Markdown output is empty.")
+                  fail("Generated Markdown is empty.")
+
+              # Clean potential code blocks if model included them
+              markdown = re.sub(r"^```markdown\s*", "", markdown, flags=re.MULTILINE)
+              markdown = re.sub(r"^```\s*$", "", markdown, flags=re.MULTILINE)
 
               day_pattern = re.compile(
-                  r"^##\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+[—\u2014\-]\s+(\d{4}-\d{2}-\d{2})\s*$",
-                  re.MULTILINE,
+                  r"^##\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s*[:—\u2014\-]\s*(\d{4}-\d{2}-\d{2})\s*$",
+                  re.MULTILINE | re.IGNORECASE
               )
+
               matches = list(day_pattern.finditer(markdown))
+
               if len(matches) != 7:
-                  fail(f"Expected 7 day headers, found {len(matches)}.")
+                  fail(
+                      f"Validation failed: expected exactly 7 day headers; "
+                      f"found {len(matches)}."
+                  )
 
               sections_by_day = {}
+
               for index, match in enumerate(matches):
-                  actual_day = match.group(1)
+                  actual_day = match.group(1).capitalize()
+                  expected_day = DAYS[index]
+                  expected_date = week_dates[index].isoformat()
+
+                  if actual_day != expected_day:
+                      fail(f"Days out of order: expected {expected_day}, found {actual_day}.")
+
                   start = match.start()
                   end = matches[index + 1].start() if index + 1 < len(matches) else len(markdown)
-                  sections_by_day[actual_day] = markdown[start:end].strip()
+                  section = markdown[start:end].strip()
+
+                  sections_by_day[actual_day] = section
+
+                  log(f"Validated {actual_day} ({expected_date})")
 
               return sections_by_day
 
           def safe_write(path, content):
               path = Path(path)
               path.parent.mkdir(parents=True, exist_ok=True)
+
               target = path
               counter = 1
+
               while target.exists():
-                  target = path.with_name(f"{path.stem}-run-{RUN_NUMBER}-{counter}{path.suffix}")
+                  target = path.with_name(
+                      f"{path.stem}-run-{RUN_NUMBER}"
+                      f"{'' if counter == 1 else '-' + str(counter)}"
+                      f"{path.suffix}"
+                  )
                   counter += 1
 
               normalized = normalize_dashes(content.rstrip()) + "\n"
+
               with target.open("x", encoding="utf-8", newline="\n") as handle:
                   handle.write(normalized)
+
               log(f"Created {target}")
               return target
 
@@ -275,23 +390,52 @@ jobs:
               knowledge = read_knowledge()
               prompt = build_prompt(knowledge, week_dates)
 
-              log("Generating optimized calendar...")
+              log(f"Generating content for week beginning {week_dates[0]}.")
               markdown = call_dahl(prompt)
+
               daily_sections = parse_and_validate(markdown, week_dates)
 
-              weekly_path = Path(f"social-posts/weekly/{week_dates[0].isoformat()}-calendar.md")
+              weekly_path = Path(
+                  "social-posts/weekly/"
+                  f"{week_dates[0].isoformat()}-calendar.md"
+              )
+
               weekly_saved = safe_write(weekly_path, markdown)
 
+              created_daily = []
+
               for day, date in zip(DAYS, week_dates):
-                  daily_path = Path(f"social-posts/daily/{date.isoformat()}-{day.lower()}.md")
-                  daily_content = f"# STRAYD Social Content - {day}, {date.isoformat()}\n\nSource: {weekly_saved.as_posix()}\n\n{daily_sections.get(day, '')}"
-                  safe_write(daily_path, daily_content)
+                  slug = day.lower()
+                  daily_path = Path(
+                      "social-posts/daily/"
+                      f"{date.isoformat()}-{slug}.md"
+                  )
+
+                  daily_content = (
+                      f"# STRAYD Social Content - {day}, "
+                      f"{date.isoformat()}\n\n"
+                      f"Source calendar: {weekly_saved.as_posix()}\n\n"
+                      f"{daily_sections[day]}"
+                  )
+
+                  created_daily.append(
+                      safe_write(daily_path, daily_content)
+                  )
 
               readme = Path("social-posts/README.md")
-              if not readme.exists():
-                  readme.write_text("# STRAYD Social Content\n", encoding="utf-8")
 
-              log("SUCCESS: CONTENT GENERATED AND SAVED")
+              if not readme.exists():
+                  readme.write_text(
+                      "# STRAYD Social Content\n\n"
+                      "- `weekly/` contains complete weekly calendars.\n"
+                      "- `daily/` contains one Markdown file per day.\n\n"
+                      "Generated by `.github/workflows/social-agent.yml`.\n",
+                      encoding="utf-8",
+                  )
+                  log("Created social-posts/README.md")
+
+              log("")
+              log("SUCCESS: WEEKLY AND DAILY CONTENT GENERATED AND VALIDATED SUCCESSFULLY")
 
           if __name__ == "__main__":
               main()
@@ -301,13 +445,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add social-posts/
+
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No new social content changes to commit."
             exit 0
           fi
-          git commit -m "Generate STRAYD social content"
+
+          git commit -m "Generate STRAYD weekly and daily social content"
+
           git push
-          echo "Committed successfully."
+
+          echo "Social content committed successfully."
