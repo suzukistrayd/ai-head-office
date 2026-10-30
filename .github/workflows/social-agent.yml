@@ -45,8 +45,8 @@ jobs:
 
           for file in \
             brand-profile.md \
-            martinstrayd.md \
-            suzukimusic.md \
+            characters/martinstrayd.md \
+            characters/suzukimusic.md \
             songarchive.md \
             social-manager-prompt.md
           do
