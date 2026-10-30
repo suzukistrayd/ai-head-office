@@ -1,0 +1,41 @@
+name: Approve & Post
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform (x, ig, tt, yt, fb)'
+        required: true
+      content_file:
+        description: 'Content file path'
+        required: true
+
+jobs:
+  approve-content:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Read content
+        id: content
+        run: |
+          echo "file=${{ github.event.inputs.content_file }}" >> $GITHUB_OUTPUT
+          cat "${{ github.event.inputs.content_file }}"
+      
+      - name: Move to approved
+        run: |
+          mkdir -p content/approved/$(date +%Y-%m-%d)
+          cp "${{ github.event.inputs.content_file }}" content/approved/$(date +%Y-%m-%d)/
+          git add content/approved/
+          git commit -m "Approved: ${{ github.event.inputs.platform }} $(date +%Y-%m-%d)"
+          git push
+      
+      - name: Create posting reminder
+        run: |
+          echo "## POST THIS NOW" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
+          echo "" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
+          echo "Platform: ${{ github.event.inputs.platform }}" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
+          echo "File: ${{ github.event.inputs.content_file }}" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
+          cat "${{ github.event.inputs.content_file }}" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
