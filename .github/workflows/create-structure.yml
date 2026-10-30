@@ -15,32 +15,85 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
       
-      - name: Create folders
+      - name: Create folders with placeholder files
         run: |
+          # INPUT folder
           mkdir -p INPUT/templates
+          echo "# INPUT\nDump files here for processing" > INPUT/README.md
+          echo "# INTAKE AGENT\nProcesses incoming files" > INPUT/INTAKE-Agent.md
+          echo "# Inbox\nUnsorted notes" > INPUT/inbox.md
+          echo "# Random Note Template" > INPUT/templates/random-note.md
+          echo "# Story Fragment Template" > INPUT/templates/story-fragment.md
+          echo "# Idea Dump Template" > INPUT/templates/idea-dump.md
+          
+          # Characters
           mkdir -p characters/suzuki/headshots
           mkdir -p characters/martin-strayd/headshots
+          echo "# SUZUKI\nMedia Manager - Thai-Japanese, 36" > characters/suzuki/-index.md
+          echo "# Bio" > characters/suzuki/bio.md
+          echo "# Visual Rules" > characters/suzuki/visual-rules.md
+          echo "# Wardrobe" > characters/suzuki/wardrobe.md
+          echo "# Story" > characters/suzuki/story.md
+          echo "# Voice" > characters/suzuki/voice.md
+          echo "# Headshots\nPlace approved headshots here" > characters/suzuki/headshots/-placeholders.md
+          echo "# MARTIN STRAYD\nRock Musician - Australian, 55" > characters/martin-strayd/-index.md
+          echo "# Bio" > characters/martin-strayd/bio.md
+          echo "# Story" > characters/martin-strayd/story.md
+          echo "# Voice" > characters/martin-strayd/voice.md
+          echo "# Headshots\nPlace approved headshots here" > characters/martin-strayd/headshots/-placeholders.md
+          
+          # mascot-maker
           mkdir -p mascot-maker/approved-mascots
-          mkdir -p strayd-stories
+          echo "# Mascot Prompt Builder" > mascot-maker/mascot-prompt-builder.md
+          echo "# Mascot Ideas" > mascot-maker/mascot-ideas.md
+          echo "# Approved Mascots" > mascot-maker/approved-mascots/README.md
+          
+          # strayd-stories
+          echo "# STRAYD Stories\nApproved stories" > strayd-stories/approved-stories.md
+          
+          # promotion-studio
           mkdir -p promotion-studio/headshots/results
           mkdir -p promotion-studio/ecommerce/mockups
           mkdir -p promotion-studio/editorial-posters/templates
+          echo "# Headshots Workflow" > promotion-studio/headshots/workflow.md
+          echo "# Headshot Results" > promotion-studio/headshots/results/README.md
+          echo "# E-commerce Workflow" > promotion-studio/ecommerce/merch-workflow.md
+          echo "# Mockups" > promotion-studio/ecommerce/mockups/README.md
+          echo "# Poster Workflow" > promotion-studio/editorial-posters/poster-workflow.md
+          echo "# Templates" > promotion-studio/editorial-posters/templates/README.md
+          
+          # knowledge
           mkdir -p knowledge/brand
           mkdir -p knowledge/platforms
           mkdir -p knowledge/workflows
+          echo "# STRAYD Brand" > knowledge/brand/strayd.md
+          echo "# Generation Rules" > knowledge/brand/generation-rules.md
+          echo "# Social Priority" > knowledge/platforms/social-priority.md
+          echo "# Content Pipeline" > knowledge/workflows/content-pipeline.md
+          echo "# Triggers" > knowledge/workflows/triggers.md
+          
+          # OUTPUT
           mkdir -p OUTPUT/social-posts
           mkdir -p OUTPUT/images
           mkdir -p OUTPUT/captions
+          echo "# Social Posts" > OUTPUT/social-posts/README.md
+          echo "# Images" > OUTPUT/images/README.md
+          echo "# Captions" > OUTPUT/captions/README.md
+          
+          # archive
           mkdir -p archive/processed
           mkdir -p archive/rejected
+          echo "# Processed" > archive/processed/README.md
+          echo "# Rejected" > archive/rejected/README.md
           
-          echo "=== Created folders ==="
-          find . -type d | grep -v ".git"
+          echo "=== Created structure ==="
+          find . -type f | grep -v ".git" | sort
 
-      - name: Commit
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Create folder structure"
+          git status
+          git commit -m "Create full folder structure with placeholders"
           git push
