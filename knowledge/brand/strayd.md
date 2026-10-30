@@ -10,27 +10,16 @@ status: ACTIVE
 # STRAYD — Brand Profile
 
 ## Official Identity
-
 **Website:** https://strayd.com
-
 **Primary Artist:** Martin Strayd
-
 **Primary Collaborative Identity:** STRAYD featuring Martin Strayd & Suzuki
-
 **Collaborative Billing:** SUZUKI & STRAYD
-
 **Copyright:** © 2026 SS SUZUKI & STRAYD
-
 ---
-
 ## Brand Mission
-
 Create meaningful music, stories, archives, education, technology and entrepreneurial projects that encourage people to keep building, keep learning and keep creating throughout life.
-
 ---
-
 ## Ecosystem
-
 | Project | Focus |
 |---------|-------|
 | **Martin Strayd** | Solo music, weekly releases, songwriting |
@@ -39,23 +28,14 @@ Create meaningful music, stories, archives, education, technology and entreprene
 | **How To Rock** | Educational community, creativity, confidence |
 | **Cool Hot Sauce** | Food innovation, entrepreneurship, Thailand |
 | **AI Projects** | Creative automation, technology |
-
 ---
-
 ## Core Message
-
 **Independent music.**
-
 **Real stories.**
-
 **Real people.**
-
 **No waiting for permission.**
-
 ---
-
 ## Content Pillars
-
 1. **Music** - Songs, albums, remixes, production
 2. **Stories** - Personal experiences, rock history
 3. **Creativity** - Ideas, experiments, lessons
@@ -80,12 +60,12 @@ Create meaningful music, stories, archives, education, technology and entreprene
 |----------|-----|
 | Website | https://strayd.com |
 | YouTube | @martinstrayd |
-| Spotify | Martin Strayd |
-| Apple Music | Martin Strayd |
+| Spotify | https://open.spotify.com/artist/6aRM8IKV2HBUZRGnnDdrM0 |
+| Apple Music | https://music.apple.com/gb/artist/martin-strayd/1714956004 |
 | SoundCloud | martinstrayd |
 | Funding | buymeacoffee.com/martinstrayd |
 | Cool Hot Sauce | https://coolhotsauce.com |
-| How To Rock | HOW TO ROCK Google Classroom |
+| How To Help | buymeacoffee.com/martinstrayd |
 
 ---
 
@@ -110,5 +90,4 @@ Create meaningful music, stories, archives, education, technology and entreprene
 - Distinguish released from future plans
 
 ---
-
 © 2026 SS SUZUKI & STRAYD
