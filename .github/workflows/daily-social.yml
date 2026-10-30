@@ -1,1 +1,41 @@
+# .github/workflows/daily-social.yml
 
+name: Daily Social Posts
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # 6pm daily
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  generate-content:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate X Post
+        run: |
+          curl https://inference.dahl.global/v1/chat/completions \
+          -H "Authorization: Bearer ${{ secrets.DAHL_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model": "MiniMaxAI/MiniMax-M2.7",
+            "messages": [{"role": "user", "content": "Generate 1 X/Twitter post for Suzuki (STRAYD). Rock and roll attitude. Anti-pop. Include hashtags. Keep under 280 chars. Real music. Real people."}]
+          }' >> content/drafts/x-draft.txt
+      
+      - name: Generate IG Caption
+        run: |
+          curl https://inference.dahl.global/v1/chat/completions \
+          -H "Authorization: Bearer ${{ secrets.DAHL_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model": "MiniMaxAI/MiniMax-M2.7",
+            "messages": [{"role": "user", "content": "Generate 1 Instagram caption for Suzuki. Witty. Rock vibe. Include 5 hashtags. End with real music. real people."}]
+          }' >> content/drafts/ig-draft.txt
+      
+      - name: Commit drafts
+        run: |
+          git config user.name "Dahl AI"
+          git add .
+          git commit -m "Daily content drafts - $(date +%Y-%m-%d)"
+          git push
