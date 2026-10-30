@@ -1,4 +1,4 @@
-name: Daily Social
+name: Simple Post
 
 on:
   workflow_dispatch:
@@ -18,42 +18,18 @@ jobs:
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          pip install requests -q
-          python3 -c "
-import os, requests, json, re
-from datetime import date
-
-# Read knowledge
-k = open('knowledge/brand/strayd.md').read()
-
-# Call API
-a = os.environ['DAHL_API_KEY']
-r = requests.post('https://inference.dahl.global/v1/chat/completions',
-    json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [
-        {'role': 'system', 'content': 'Return ONLY the post text. No explanations. No code fences.'},
-        {'role': 'user', 'content': k + ' Write ONE X post. Under 280 chars. Rock. 2-3 hashtags.'}
-    ]},
-    headers={'Authorization': 'Bearer ' + a},
-    timeout=60
-)
-
-# Get content
-c = r.json()['choices'][0]['message']['content']
-
-# Clean AI artifacts
-c = c.replace('-', '-').replace(''', \"'\").replace(''', \"'\")
-
-# Save
-t = date.today().isoformat()
-os.makedirs('content/drafts', exist_ok=True)
-open(f'content/drafts/x-{t}.md', 'w').write('# X Post\n\n' + c)
-print('Done')
-"
+          mkdir -p content/drafts
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"system","content":"Return ONLY the post text. Nothing else."},{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write ONE X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
+            > /tmp/response.json
+          python3 -c "import json; open('content/drafts/x-$(date +%Y-%m-%d).md','w').write('# X Post\n\n' + json.load(open('/tmp/response.json'))['choices'][0]['message']['content'])"
 
       - name: Commit
         run: |
           git config user.name "bot"
           git config user.email "bot@strayd.com"
           git add -A
-          git commit -m "daily"
+          git commit -m "x post"
           git push origin main
