@@ -1,0 +1,43 @@
+name: Daily Social
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Setup git
+        run: |
+          git config --global user.name "bot"
+          git config --global user.email "bot@strayd.com"
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: suzukistrayd/ai-head-office
+
+      - name: Generate X post
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          pip install requests -q
+          python3 -c "
+import os, requests
+from datetime import date
+k = open('knowledge/brand/strayd.md').read()
+a = os.environ['DAHL_API_KEY']
+r = requests.post('https://inference.dahl.global/v1/chat/completions', json={'model':'MiniMaxAI/MiniMax-M2.7','messages':[{'role':'user','content':k+' Write ONE X post. Rock. 2-3 hashtags.'}]}, headers={'Authorization':'Bearer '+a}, timeout=60)
+t = date.today().isoformat()
+os.makedirs('content/drafts', exist_ok=True)
+open(f'content/drafts/x-{t}.md', 'w').write('# X\n\n' + r.json()['choices'][0]['message']['content'])
+print('done')
+"
+
+      - name: Commit
+        run: |
+          git add -A
+          git commit -m "daily"
+          git push origin main
