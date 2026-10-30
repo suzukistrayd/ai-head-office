@@ -1,41 +1,78 @@
-name: Approve & Post
+name: Daily Social Posts
 
 on:
   workflow_dispatch:
-    inputs:
-      platform:
-        description: 'Platform (x, ig, tt, yt, fb)'
-        required: true
-      content_file:
-        description: 'Content file path'
-        required: true
 
 jobs:
-  approve-content:
+  build:
     runs-on: ubuntu-latest
-    environment: production
-    
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Read content
-        id: content
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: suzukistrayd/ai-head-office
+
+      - name: Check knowledge
         run: |
-          echo "file=${{ github.event.inputs.content_file }}" >> $GITHUB_OUTPUT
-          cat "${{ github.event.inputs.content_file }}"
-      
-      - name: Move to approved
+          echo "=== CHECKING FILES ==="
+          ls knowledge/brand/
+          ls characters/
+          echo "=== ALL GOOD ==="
+
+      - name: Generate X
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          mkdir -p content/approved/$(date +%Y-%m-%d)
-          cp "${{ github.event.inputs.content_file }}" content/approved/$(date +%Y-%m-%d)/
-          git add content/approved/
-          git commit -m "Approved: ${{ github.event.inputs.platform }} $(date +%Y-%m-%d)"
-          git push
-      
-      - name: Create posting reminder
+          mkdir -p content/drafts
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write 1 X post. Under 280 chars. Rock. 2-3 hashtags."}]}' \
+            > /tmp/x.json
+          python3 -c "import json; r=json.load(open('/tmp/x.json')); open('content/drafts/x-$(date +%Y-%m-%d).md','w').write('# X Post\n\n' + r['choices'][0]['message']['content'])"
+
+      - name: Generate IG
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          echo "## POST THIS NOW" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
-          echo "" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
-          echo "Platform: ${{ github.event.inputs.platform }}" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
-          echo "File: ${{ github.event.inputs.content_file }}" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
-          cat "${{ github.event.inputs.content_file }}" >> content/approved/$(date +%Y-%m-%d)/POST-${{ github.event.inputs.platform }}.md
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Instagram caption. Hook first. 5 hashtags."}]}' \
+            > /tmp/ig.json
+          python3 -c "import json; r=json.load(open('/tmp/ig.json')); open('content/drafts/ig-$(date +%Y-%m-%d).md','w').write('# Instagram\n\n' + r['choices'][0]['message']['content'])"
+
+      - name: Generate TT
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write TikTok script. Hook 3sec. Story. CTA."}]}' \
+            > /tmp/tt.json
+          python3 -c "import json; r=json.load(open('/tmp/tt.json')); open('content/drafts/tt-$(date +%Y-%m-%d).md','w').write('# TikTok\n\n' + r['choices'][0]['message']['content'])"
+
+      - name: Generate FB
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          curl -s -X POST https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer $DAHL_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"STRAYD featuring Martin Strayd and Suzuki. Anti-Pop Rock and Roll. Write Facebook post. Story. Emoji. CTA."}]}' \
+            > /tmp/fb.json
+          python3 -c "import json; r=json.load(open('/tmp/fb.json')); open('content/drafts/fb-$(date +%Y-%m-%d).md','w').write('# Facebook\n\n' + r['choices'][0]['message']['content'])"
+
+      - name: Show files
+        run: |
+          echo "=== FILES CREATED ==="
+          ls -la content/drafts/
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/drafts/
+          git commit -m "Social content $(date +%Y-%m-%d)"
+          git push origin main
