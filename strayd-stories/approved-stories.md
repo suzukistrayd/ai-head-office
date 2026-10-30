@@ -1,1 +1,1 @@
-# STRAYD Stories
+
