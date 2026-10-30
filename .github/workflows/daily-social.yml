@@ -4,58 +4,44 @@ on:
   workflow_dispatch:
 
 jobs:
-  generate:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: suzukistrayd/ai-head-office
 
-      - name: Setup
-        run: pip install requests -q
-
-      - name: Generate posts with knowledge
+      - name: Generate
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          python3 << 'PYEOF'
+          pip install requests -q
+          python3 -c "
 import os, requests
 from datetime import date
-
-# READ KNOWLEDGE FILES FIRST
-brand = open("knowledge/brand/strayd.md").read()
-suzuki = open("characters/suzuki/-index.md").read()
-martin = open("characters/martin-strayd/-index.md").read()
-
-# BUILD CONTEXT
-context = brand + "\n" + suzuki + "\n" + martin
-
-api_key = os.environ["DAHL_API_KEY"]
-url = "https://inference.dahl.global/v1/chat/completions"
-headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-def gen(prompt):
-    r = requests.post(url, json={"model": "MiniMaxAI/MiniMax-M2.7", "messages": [{"role": "user", "content": context + "\n\n" + prompt}]}, headers=headers, timeout=60)
-    return r.json()["choices"][0]["message"]["content"]
-
+brand = open('knowledge/brand/strayd.md').read()
+suzuki = open('characters/suzuki/-index.md').read()
+martin = open('characters/martin-strayd/-index.md').read()
+ctx = brand + suzuki + martin
+api = os.environ['DAHL_API_KEY']
+url = 'https://inference.dahl.global/v1/chat/completions'
+h = {'Authorization': 'Bearer ' + api}
+def g(m):
+    return requests.post(url, json={'model': 'MiniMaxAI/MiniMax-M2.7', 'messages': [{'role': 'user', 'content': ctx + m}]}, headers=h, timeout=60).json()['choices'][0]['message']['content']
 t = date.today().isoformat()
-os.makedirs("content/drafts", exist_ok=True)
-
-open(f"content/drafts/x-{t}.md", "w").write("# X Post\n\n" + gen("Write ONE X post. Under 280 chars. Rock. 2-3 hashtags. Output ONLY the post."))
-open(f"content/drafts/ig-{t}.md", "w").write("# Instagram\n\n" + gen("Write ONE Instagram caption. Hook first. 5 hashtags. Output ONLY the caption."))
-open(f"content/drafts/tt-{t}.md", "w").write("# TikTok\n\n" + gen("Write TikTok script. Hook 3sec. Story. CTA. Output ONLY the script."))
-open(f"content/drafts/fb-{t}.md", "w").write("# Facebook\n\n" + gen("Write Facebook post. Story. Emoji. CTA. Output ONLY the post."))
-
-print("Done:", os.listdir("content/drafts"))
-PYEOF
+os.makedirs('content/drafts', exist_ok=True)
+open(f'content/drafts/x-{t}.md', 'w').write('# X Post\n\n' + g('Write ONE X post. Under 280 chars. Rock. 2-3 hashtags. Output ONLY the post.'))
+open(f'content/drafts/ig-{t}.md', 'w').write('# Instagram\n\n' + g('Write ONE Instagram caption. Hook first. 5 hashtags. Output ONLY.'))
+open(f'content/drafts/tt-{t}.md', 'w').write('# TikTok\n\n' + g('Write TikTok script. Hook. Story. CTA. Output ONLY.'))
+open(f'content/drafts/fb-{t}.md', 'w').write('# Facebook\n\n' + g('Write Facebook post. Story. Emoji. CTA. Output ONLY.'))
+print('Done')
+"
 
       - name: Commit
         run: |
-          git config user.name "Dahl Bot"
+          git config user.name "bot"
           git config user.email "bot@strayd.com"
-          git add content/drafts/
-          git commit -m "Daily social $(date +%Y-%m-%d)"
+          git add -A
+          git commit -m "workflow"
           git push origin main
