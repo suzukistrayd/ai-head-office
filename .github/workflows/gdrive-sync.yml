@@ -2,7 +2,7 @@ name: GDrive to GitHub Sync
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    - cron: '0 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -25,8 +25,8 @@ jobs:
 
       - name: Install rclone
         run: |
-          curl -s https://rclone.org/install.sh | bash
-          rclone version
+          curl -sL https://rclone.org/install.sh | bash -s -- --user
+          ~/rclone-v1.75.2-linux-amd64/rclone version
 
       - name: Configure GDrive
         env:
@@ -39,36 +39,25 @@ jobs:
           scope = drive
           token = {"access_token":"","access_token_expiry":"2026-01-01T00:00:00Z","refresh_token":"$RCLONE_TOKEN","token_type":"Bearer"}
           EOF
-          echo "=== Testing GDrive connection ==="
-          rclone lsd gdrive: --max-depth 1 || echo "Connection test complete"
+          ~/rclone-v1.75.2-linux-amd64/rclone lsd gdrive: --max-depth 1
 
       - name: Sync from GDrive
         run: |
-          echo "=== Syncing knowledge folder ==="
-          rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/knowledge/ knowledge/ --update --verbose || true
-          
-          echo "=== Syncing characters folder ==="
-          rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/characters/ characters/ --update --verbose || true
-          
-          echo "=== Syncing content folder ==="
-          rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/content/ content/ --update --verbose || true
+          ~/rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/knowledge/ knowledge/ --update --verbose || true
+          ~/rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/characters/ characters/ --update --verbose || true
+          ~/rclone-v1.75.2-linux-amd64/rclone copy gdrive:1iO-VKSF03DirybwOmKPURNBw_YoRYRd7/content/ content/ --update --verbose || true
 
-      - name: Show synced files
+      - name: Show files
         run: |
-          echo "=== Knowledge files ==="
+          echo "=== Knowledge ==="
           find knowledge -name "*.md" 2>/dev/null | head -10
-          echo ""
-          echo "=== Character files ==="
+          echo "=== Characters ==="
           find characters -name "*.md" 2>/dev/null | head -10
-          echo ""
-          echo "=== Draft content ==="
-          find content -name "*.txt" 2>/dev/null | head -5
 
       - name: Commit and push
         run: |
           git config user.name "GDrive Sync Bot"
           git config user.email "sync@strayd.com"
           git add -A
-          git status --short
-          git commit -m "Sync from GDrive $(date '+%Y-%m-%d %H:%M')" || echo "No changes to commit"
-          git push origin main || echo "Push completed or skipped"
+          git commit -m "Sync from GDrive $(date)" || echo "No changes"
+          git push origin main || echo "Push done"
