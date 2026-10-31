@@ -333,5 +333,6 @@ jobs:
             exit 0
           fi
           git commit -m "Generate STRAYD content for characters"
+          git pull --rebase origin main || git rebase --skip
           git push
           echo "Content committed successfully."
