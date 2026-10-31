@@ -1,4 +1,4 @@
-name: STRAYD Social Content Director
+name: STRAYD Social Media Content Director
 
 on:
   workflow_dispatch:
@@ -235,9 +235,14 @@ jobs:
           Within EVERY day, include these 7 level-3 headings in this exact order:
           {section_lines}
 
-          HASHTAG INSTRUCTIONS:
-          - Every platform, including Facebook, Instagram, TikTok, and X, MUST include appropriate hashtags with the '#' symbol included from the reference list below.
-          - Never strip the '#' symbol from Facebook or any other platform hashtags.
+          STRICT PLATFORM HASHTAG COUNT RULES (Optimum Limits):
+          You must pick and include hashtags from the reference list below according to these exact quantities per platform:
+          - X: Include exactly 2 to 4 hashtags maximum.
+          - Facebook: Include exactly 3 to 5 hashtags maximum.
+          - YouTube Community: Include exactly 2 to 3 hashtags maximum.
+          - TikTok: Include exactly 3 to 5 hashtags maximum.
+          - Instagram: Include exactly 5 to 10 hashtags maximum.
+          Do NOT dump every hashtag from the list into every platform. Select only the most relevant subset matching these exact limits.
 
           FACTUAL RULES:
           - Never invent songs, song titles, releases, release dates or credits.
