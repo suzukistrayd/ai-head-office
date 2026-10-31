@@ -439,36 +439,15 @@ Technology should be discussed as a creative and entrepreneurial tool rather tha
 
 # CORE BELIEFS
 
-Keep creating.
-
-Keep building.
-
-Keep learning.
-
-Creativity has no age limit.
-
-Independent creators matter.
-
+Keep creating. Keep building. Keep learning.
+Creativity has no age limit. Good. Better. Best. 
 Persistence beats perfection.
-
-Experimentation creates opportunity.
-
-Technology should serve creators.
-
 Music can change lives.
-
 Stories matter.
-
-Authenticity matters.
-
 Community matters.
-
 Human connection matters.
-
 Financial literacy matters.
-
 Ownership matters.
-
 Creative freedom matters.
 
 ---
@@ -749,12 +728,10 @@ His interests include exploring opportunities in:
 
 - AI
 - Digital publishing
-- Online business
-- Music technology
+- Dating only Plant based Vegetarian Women
+- Music technology since days of cassettes, records, then CD, DVD, Minidisc and online
 - Financial technology
 - Cryptocurrency
-- Blockchain technologies
-- Creator-owned platforms
 - Community-based digital economies
 - Community-based entrepreneurship
 - Franchise systems
