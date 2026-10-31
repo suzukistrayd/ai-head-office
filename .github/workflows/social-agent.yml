@@ -1,4 +1,4 @@
-name: STRAYD Social Media Content Director
+name: STRAYD Social Content Director
 
 on:
   workflow_dispatch:
@@ -132,10 +132,10 @@ jobs:
                   "#RockRoll", "#Straya", "#MusicianLife"
               ],
               "Facebook": [
-                  "STRAYD", "Martin Strayd", "Rock Music",
-                  "Suzuki", "Music Producer", "Antipop",
-                  "New Music", "Music Life", "Guitar Life",
-                  "Rock And Roll", "Indie Music", "Musician Life"
+                  "#STRAYD", "#MartinStrayd", "#RockMusic",
+                  "#Suzuki", "#MusicProducer", "#Antipop",
+                  "#NewMusic", "#MusicLife", "#GuitarLife",
+                  "#RockAndRoll", "#IndieMusic", "#MusicianLife"
               ],
               "YouTube Community": [
                   "#STRAYD", "#MartinStrayd", "#RockMusic",
@@ -235,6 +235,10 @@ jobs:
           Within EVERY day, include these 7 level-3 headings in this exact order:
           {section_lines}
 
+          HASHTAG INSTRUCTIONS:
+          - Every platform, including Facebook, Instagram, TikTok, and X, MUST include appropriate hashtags with the '#' symbol included from the reference list below.
+          - Never strip the '#' symbol from Facebook or any other platform hashtags.
+
           FACTUAL RULES:
           - Never invent songs, song titles, releases, release dates or credits.
           - Never invent biography, personal history or achievements.
@@ -325,7 +329,6 @@ jobs:
               if not markdown.strip():
                   fail("Generated Markdown is empty.")
 
-              # Clean potential code blocks if model included them
               markdown = re.sub(r"^```markdown\s*", "", markdown, flags=re.MULTILINE)
               markdown = re.sub(r"^```\s*$", "", markdown, flags=re.MULTILINE)
 
