@@ -218,9 +218,11 @@ jobs:
               hashtag_reference = "\n".join(hashtag_ref)
 
               return f"""
-          You are the STRAYD Content Director. You MUST output Markdown only.
+          You are the STRAYD Content Director. You MUST output Markdown content only.
+          Do NOT include any internal thoughts, reasoning steps, planning, introduction, preamble, commentary, or summary.
+          Do NOT write phrases like "Let me carefully analyze..." or "Looking at the song archive...".
+          Start IMMEDIATELY with the first heading: ## Monday - {week_dates[0].isoformat()}
           Do NOT wrap your response in markdown code blocks (```markdown ... ```).
-          Do NOT write any introduction, commentary, or summary.
 
           Generate content for all 7 days in exact order:
           {date_lines}
@@ -266,7 +268,8 @@ jobs:
                           "role": "system",
                           "content": (
                               "You are the STRAYD Content Director. "
-                              "Return only the raw requested Markdown without code fences."
+                              "Return only raw production Markdown starting directly with the first day header. "
+                              "Do NOT write any thinking process, internal monologue, preamble, or commentary."
                           ),
                       },
                       {"role": "user", "content": prompt},
@@ -403,12 +406,15 @@ jobs:
 
               daily_sections = parse_and_validate(markdown, week_dates)
 
+              # Assemble pure weekly file strictly from validated daily sections (stripping model thoughts)
+              clean_weekly_content = "\n\n".join(daily_sections[day] for day in DAYS)
+
               weekly_path = Path(
                   "social-posts/weekly/"
                   f"{week_dates[0].isoformat()}-calendar.md"
               )
 
-              weekly_saved = safe_write(weekly_path, markdown)
+              weekly_saved = safe_write(weekly_path, clean_weekly_content)
 
               created_daily = []
 
