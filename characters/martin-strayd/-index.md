@@ -45,6 +45,7 @@ Anti-Pop Rock, guitar-driven, punk-influenced, reggae, blues, electronic remixes
 ### Official Links
 - strayd.com
 - YouTube: @martinstrayd
+- Facebook: https://www.facebook.com/profile.php?id=61596138293418
 - Spotify, Apple Music, SoundCloud
 - Funding: buymeacoffee.com/martinstrayd
 
