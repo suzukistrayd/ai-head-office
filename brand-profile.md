@@ -27,17 +27,16 @@ The Martin Strayd ecosystem combines:
 - Storytelling
 - Books
 - Rock history
-- Archives
-- Education
-- Technology
-- Artificial Intelligence
-- Entrepreneurship
-- Community projects
-- Independent creativity
+- 1990s - 2000 Hollywood Archives
+- Plant based vegetarian Education
+- Avoiding Artificial Intelligence
+- A life of Entrepreneurship
+- Community projects Hot Sauce Ecosystem 
+- Independent creativity 
 
 The goal is not simply entertainment.
 
-The goal is to inspire creativity, independence, lifelong curiosity, meaningful human connection and financial freedom through creative action.
+The goal is to inspire creativity, independence, lifelong curiosity, meaningful human connection and financial freedom through modern soy free burger franchise.
 
 ---
 
