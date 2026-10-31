@@ -40,7 +40,8 @@ status: ACTIVE
 
 ### Social
 - X: https://x.com/suzukistrayd
-- Funding: https://buymeacoffee.com/martinstrayd
+- Facebook:https://www.facebook.com/profile.php?id=61596138293418
+- - Funding: https://buymeacoffee.com/martinstrayd
 
 ---
 
