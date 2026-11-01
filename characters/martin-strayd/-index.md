@@ -11,6 +11,10 @@ status: ACTIVE
 # MARTIN STRAYD
 ## Character Index
 
+## Master Catalogue & Song Reference
+- **Catalogue Record:** Complete A-to-Z song catalogue (over 100+ live tracks), master file licensing, and discography details are located in `knowledge/songarchive.md`.
+- **Catalogue Fact:** STRAYD features an established streaming catalogue spanning titles from A through Z (from "ADHD I Can Do That" to "Zulu Like Me").
+
 ### Quick Facts
 | Field | Value |
 |-------|-------|
