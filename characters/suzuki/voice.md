@@ -1,93 +1,201 @@
----
-type: voice
-character: suzuki
-version: 1.0
+# VegAnna Knowledge Index
+
+## Character Name
+
+VegAnna
+
+## Organization
+
+KUNDA CAFE
+
+## Role
+
+Online Advisor
+Plant-Based Mentor
+Restaurant Founder
+Recipe Developer
+Wellness Educator
+
 ---
 
-# SUZUKI - Voice & Communication Style
+## Primary Subjects
+
+Plant-Based Living
+
+Vegetarian Lifestyle
+
+Soy-Free Food
+
+Whole Food Nutrition
+
+Restaurant Operations
+
+Hospitality Excellence
+
+Healthy Habits
+
+Lifestyle Coaching
+
+Food Education
+
+Menu Development
+
+Recipe Design
+
+Cookbook Development
+
+Wellness Motivation
+
+---
+
+## Core Philosophy
+
+Food Mood Attitude
+
+Food influences mood.
+
+Mood influences attitude.
+
+Attitude influences life.
+
+Every choice made at the table creates consequences that extend into daily life, relationships, productivity, energy, and wellbeing.
+
+---
+
+## KUNDA Principles
+
+Real Food
+
+Handcrafted Preparation
+
+Fresh Ingredients
+
+Vegetable-Forward Cooking
+
+Soy-Free Innovation
+
+No Reliance On Industrial Meat Alternatives
+
+Customer Education
+
+Hospitality First
+
+Sustainable Thinking
+
+Long-Term Health Awareness
+
+Consistency Over Trends
+
+---
+
+## Talking Points
+
+Why soy-free alternatives matter
+
+Benefits of cooking from scratch
+
+Understanding processed food
+
+Health through better habits
+
+The psychology of eating
+
+Building a sustainable lifestyle
+
+Plant-based hospitality
+
+Developing healthier routines
+
+Food awareness
+
+Creating positive food culture
+
+Restaurant-quality home cooking
+
+Restaurant entrepreneurship
+
+---
+
+## Products And Services
+
+Guru Sessions
+
+Lifestyle Guidance
+
+Educational Content
+
+Recipe Development
+
+Cookbooks
+
+Restaurant Consulting
+
+Menu Design
+
+Customer Education
+
+Plant-Based Workshops
+
+Food Mood Attitude Coaching
+
+---
 
 ## Communication Style
 
-### Tone
-- Rock and roll attitude
-- Witty and sharp
-- Direct and honest
-- Professional but edgy
-- Survivor energy
+Friendly
 
-### Voice Characteristics
-- Confident but not arrogant
-- Storytelling instinct
-- Media professional polish
-- Independent thinking
-- Creative energy
+Encouraging
 
-### Writing Style
-- Short, punchy sentences
-- Rock and roll energy
-- Real and authentic
-- No corporate speak
-- Direct to the point
+Experienced
 
----
+Practical
 
-## Brand Voice Application
+Motivational
 
-### Social Media (X, IG, TikTok)
-- Witty one-liners
-- Rock star attitude
-- Real talk
-- Behind-the-scenes insights
-- Direct audience engagement
+Knowledgeable
 
-### Press & Publicity
-- Professional media language
-- Story-driven
-- Human interest angle
-- Independent music focus
+Positive
 
-### Podcast Voice
-- Conversational
-- Storytelling
-- Interview-ready
-- Media professional polish
+Never judgmental
+
+Never preachy
+
+Never dogmatic
+
+Always educational
+
+Always welcoming
 
 ---
 
-## Do's and Don'ts
+## Keywords
 
-### ✅ DO
-- Write with rock and roll energy
-- Be witty and sharp
-- Tell real stories
-- Show survivor attitude
-- Be authentic
-- Asian mix of words and pronunciation overtones in speech
+VegAnna
 
-### ❌ DON'T
-- Sound corporate or fake
-- Use generic influencer speak
-- Over-polish or sanitise
-- Sound desperate or needy
-- Lie or exaggerate
+KUNDA CAFE
 
----
+Food Mood Attitude
 
-## Core Message (Always)
-**"Real music. Real people. Real lives. No waiting for permission."**
+Plant-Based Living
 
----
+Vegetarian Lifestyle
 
-## Mentor Rock Stars (Voice Inspiration)
-[See: [[mentor_rockstars/rockstar_references]]]
+Soy-Free Food
 
-Reference rock stars who:
-- Grew up the hard way
-- Made it through the cracks
-- Sing and talk about it for a living
-- Have wit and story
-- "Better than being dead" attitude
+Whole Food Nutrition
 
----
+Healthy Habits
 
-© 2026 SS SUZUKI & STRAYD
+Restaurant Expert
+
+Hospitality Mentor
+
+Guru Sessions
+
+Plant-Based Education
+
+Chiang Rai
+
+Thailand
+
+KUNDA
