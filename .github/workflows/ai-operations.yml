@@ -1,0 +1,38 @@
+name: AI Head Office Operations & Validation
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  validate-and-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify Modular File Structure
+        run: |
+          echo "Checking character directories..."
+          test -f characters/martin-strayd/-index.md
+          test -f characters/martin-strayd/bio.md
+          test -f characters/martin-strayd/voice.md
+          test -f characters/suzuki/-index.md
+          test -f characters/suzuki/bio.md
+          echo "Checking knowledge base directory..."
+          test -f knowledge/brand-profile.md
+          test -f knowledge/SYSTEM_PROMPT.md
+          echo "All structural file checks passed successfully."
+
+      - name: Compile Weekly/Daily Activity Log Skeleton
+        run: |
+          mkdir -p social-posts/daily social-posts/weekly
+          DATE_STAMP=$(date +%Y-%m-%d)
+          echo "# Automated Build Log - $DATE_STAMP" > social-posts/daily/$DATE_STAMP.md
+          echo "System verified modular character attributes and knowledge base successfully." >> social-posts/daily/$DATE_STAMP.md
