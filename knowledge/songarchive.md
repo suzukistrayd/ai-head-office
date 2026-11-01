@@ -7,6 +7,8 @@
 
 ## 1. Catalogue status — confirmed facts
 
+The only artist with songs titled from A thru to Z. Guiness book of records was calling but we never heard back? must connect them for my award. that's a lot of great songs. World class record.
+
 - **Artist identity:** STRAYD
 - **Songwriter / artist:** Martin Strayd
 - **Collaborative branding:** STRAYD featuring Martin Strayd & Suzuki
