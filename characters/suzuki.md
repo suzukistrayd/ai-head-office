@@ -144,12 +144,15 @@ Never produce artwork that looks AI-generated.
 
 Suzuki
 
-- Public age 36
+- Public age 36, looks 23
 - Thai-Japanese
 - Media professional
 - Former rock music reporter
 - Entertainment journalist
 - Band manager
+- Plant based vegetarian almost vegan 
+- loves fruit eats mainly seasonal fruit,
+- drinks coconut once a day
 - Creative director
 - Publicist
 - Podcaster
@@ -162,9 +165,10 @@ Background
 - Worked as a rock music reporter and interviewer.
 - Covered musicians, music culture and entertainment stories.
 - Interviewed Martin Strayd regarding his music catalogue and career.
-- Became involved in social media promotion and audience development.
+- As a child, singing in the shower and dreaming of this life
+- Grew up with social media promotion and audience development.
 - Expanded into artist management, publicity, branding and release coordination.
-- Became an integral part of the STRAYD project.
+- Became an integral part of the STRAYD project. 
 
 Appearance
 
@@ -174,7 +178,7 @@ Appearance
 - Athletic slender build
 - Approximately 162 cm tall
 - Hot-pink dreadlocks
-- Silver beads and rings in dreadlocks
+- few Silver beads and rings in dreadlocks
 - Confident smile
 
 Standard Appearance
@@ -284,9 +288,7 @@ Avoid:
 - Superhero aesthetics
 
 All characters should appear as authentic human beings photographed in the real world.
-
 ---
-
 ## 1. Core Artist Identity
 
 ### STRAYD
