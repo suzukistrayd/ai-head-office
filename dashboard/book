@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRAYD HQ // Novel & Memory Studio</title>
+    <style>
+        :root {
+            --bg-color: #0f1117;
+            --panel-bg: #1a1d24;
+            --accent-gold: #d4af37;
+            --accent-cyan: #00e5ff;
+            --text-main: #e0e6ed;
+            --text-dim: #8b9bb4;
+            --border-color: #2a2e39;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 10px;
+            display: block;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            background-color: #0f1117;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .chat-box {
+            height: 480px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            background-color: #12141c;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            background-color: #1e2638;
+            border-left: 4px solid var(--accent-cyan);
+        }
+
+        .message.team {
+            background-color: #262115;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .role-badge {
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .btn {
+            background-color: var(--accent-gold);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-start {
+            background-color: #00e5ff;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- LEFT CONTROL PANEL -->
+    <div class="panel">
+        <h2>Book Control Hub</h2>
+        <p style="font-size: 0.8rem; color: var(--text-dim);">Project: SECRET SERVICE: Backstage with Martin Strayd</p>
+
+        <label for="activeRole">Primary Agent/Perspective</label>
+        <select id="activeRole">
+            <option value="full_team">Full Team (Martin + Suzuki + Veg-Anna)</option>
+            <option value="martin">Martin Strayd (Lead Creative & Voice)</option>
+            <option value="suzuki">Suzuki (Pacing, Logic & Hooks)</option>
+            <option value="veg_anna">Veg-Anna (Kunda Lore & Continuity)</option>
+        </select>
+
+        <label for="chapterFormat">Structure Goal</label>
+        <select id="chapterFormat">
+            <option value="chapter_draft">Full Chapter Draft (3-Act Hook)</option>
+            <option value="timeline_sync">Chronology & Timeline Indexing</option>
+            <option value="dialogue_test">Dialogue & Podcast Test Workshop</option>
+            <option value="lyric_placement">Lyric Header Matching</option>
+        </select>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="useRAG" checked>
+            <label for="useRAG" style="margin: 0;">Query RAG Memory Node</label>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="enforce90s" checked>
+            <label for="enforce90s" style="margin: 0;">Enforce 90s Screenless Rule</label>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0; width: 100%;">
+
+        <h3>GitHub Sync Status</h3>
+        <label for="repoBranch">Target Branch</label>
+        <input type="text" id="repoBranch" value="main" readonly>
+        
+        <label for="savePath">Output File Path</label>
+        <input type="text" id="savePath" value="manuscript/novel-volume-1.md">
+    </div>
+
+    <!-- MAIN CHAT & DRAFTING AREA -->
+    <div class="panel">
+        <h2>Manuscript Drafting Terminal</h2>
+        
+        <!-- START SESSION BUTTON -->
+        <button class="btn btn-start" onclick="triggerStartSession()">🚀 Start Session // Interrogate Me</button>
+
+        <div id="chatHistory" class="chat-box">
+            <div class="message team">
+                <span class="role-badge" style="color: var(--accent-gold);">STRAYD HQ TEAM</span>
+                Systems online. Hit <strong>Start Session</strong> above to initiate the team briefing and let us ask you for today's required notes, lyrics, or timeline fragments.
+            </div>
+        </div>
+
+        <label for="userInput">Input Notes, Answers, or Raw Text (Hit Enter to Send)</label>
+        <textarea id="userInput" rows="3" placeholder="Type your notes or answer the team's questions here..." onkeydown="handleKeyPress(event)"></textarea>
+        
+        <button class="btn" style="margin-top: 10px;" onclick="processDraft()">Process Scene / Submit Answer</button>
+    </div>
+</div>
+
+<script>
+    function handleKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            processDraft();
+        }
+    }
+
+    function triggerStartSession() {
+        const role = document.getElementById('activeRole').value;
+        const format = document.getElementById('chapterFormat').value;
+        const chatHistory = document.getElementById('chatHistory');
+
+        const startMsg = document.createElement('div');
+        startMsg.className = 'message team';
+        
+        let promptText = "";
+        if (role === 'martin') {
+            promptText = "<strong>[Martin Strayd]:</strong> Boss, I'm at the mic and looking at the early 90s timeline. To lock down today's chapter draft, I need you to give me: <em>1) The exact venue or backstage atmosphere we're hitting today, and 2) Which song lyric from your vault we should anchor to the opening header.</em> Give me the raw memory!";
+        } else if (role === 'suzuki') {
+            promptText = "<strong>[Suzuki]:</strong> Let's move fast. To keep our 3-volume sprint on schedule, I need your input on today's structural pacing. Drop your notes on: <em>1) The key turning point of this scene, and 2) Any specific 90s analog detail we need to emphasize (no screens, pure grit).</em> What are we building today?";
+        } else if (role === 'veg_anna') {
+            promptText = "<strong>[Veg-Anna]:</strong> Checking in from Kunda Cafe. To keep our brand vibe and Kunda lore seamless across the chapters, I need: <em>1) The backstage interaction or conversation dynamic you want highlighted, and 2) Any specific character notes for today's sequence.</em> Lay it on us!";
+        } else {
+            promptText = "<strong>[FULL TEAM INTERROGATION]:</strong> All right, producer. The dashboard is live, 90s grit is enforced, and the RAG index is ready. To write today's pages without stalling, the team needs you to provide: 
+            <br>• <strong>1. The Raw Scene / Memory:</strong> What specific moment from the 30-year vault are we tackling?
+            <br>• <strong>2. The Lyric Match:</strong> Which song lyric are we putting at the chapter break?
+            <br>• <strong>3. The Conflict:</strong> What was the tension backstage that day?
+            <br><br>Drop your notes below and we'll start drafting immediately!";
+        }
+
+        startMsg.innerHTML = `<span class="role-badge" style="color: var(--accent-gold);">${role.toUpperCase()} // SESSION BRIEFING</span>${promptText}`;
+        chatHistory.appendChild(startMsg);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    async function processDraft() {
+        const inputField = document.getElementById('userInput');
+        const input = inputField.value.trim();
+        const role = document.getElementById('activeRole').value;
+        const format = document.getElementById('chapterFormat').value;
+        const chatHistory = document.getElementById('chatHistory');
+
+        if (!input) return;
+
+        // Render User Input
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message user';
+        userMsg.innerHTML = `<span class="role-badge" style="color: var(--accent-cyan);">PRODUCER</span>${input.replace(/\n/g, '<br>')}`;
+        chatHistory.appendChild(userMsg);
+
+        inputField.value = '';
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        // Simulated Response processing the input
+        setTimeout(() => {
+            const teamMsg = document.createElement('div');
+            teamMsg.className = 'message team';
+            teamMsg.innerHTML = `<span class="role-badge" style="color: var(--accent-gold);">${role.toUpperCase()} // DRAFTING ENGINE</span>
+            <strong>[Data Extracted & Logged]</strong><br>
+            Got it. We've locked your notes into the pipeline for <code>${format}</code> with 90s analog atmosphere enforced.<br><br>
+            <em>Ready for next input or compile step into <code>${document.getElementById('savePath').value}</code>.</em>`;
+            chatHistory.appendChild(teamMsg);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }, 600);
+    }
+</script>
+</body>
+</html>
