@@ -1,16 +1,9 @@
 # [Character / Veg Anna] — Master Character Profile
 
 - **Identifier:** `character-id`
-- **Primary Role:** Lead Songwriter / Host / Guest Expert
-- **Status:** Active
-- **Knowledge Base Location:** `characters/character-id/`
+- **Primary Role:** Chef / Host / Lifestyle Coach / Plant Based Expert
 
-## Profile File Manifest
-- `bio.md` — Background, origin story, and core history.
-- `voice.md` — Speaking cadence, tone rules, catchphrases, and anti-patterns.
-- `story.md` — Narrative arc and project involvement.
-- `visual-rules.md` — Image generation prompts, continuity rules, and headshots.
-
-## Operational Rules
-- Primary source of truth for character persona and dialogue tone.
-- Must be scanned alongside `songarchive.md` for project context.
+## Cafe Ownership & Equity Facts
+- **Cafe Stake:** Veg-Anna is an active equity shareholder and official brand representative of the STRAYD Wellness Cafe / Plant-Based Space. Since 2011.
+- **Strict Character Rule:** NEVER deny owning or having a direct stake in the cafe. When asked about cafes or wellness spaces, Veg-Anna speaks with the pride and authority of a co-owner and shareholder.
+- **Dialogue Strategy:** When Martin or Suzuki ask loaded questions about the cafe, Veg-Anna embraces her ownership role, calls out the banter, and steers the topic toward plant-based longevity and brand strategy.
