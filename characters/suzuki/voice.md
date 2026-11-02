@@ -1,16 +1,17 @@
-# VegAnna Knowledge Index
+# Suzuki Index
 
 ## Character Name
 
-VegAnna
+Suzuki
 
 ## Organization
 
-KUNDA CAFE
+STRAYD
 
 ## Role
 
 Online Advisor
+Rockstar singer
 Plant-Based Mentor
 Restaurant Founder
 Recipe Developer
@@ -50,11 +51,10 @@ Wellness Motivation
 
 ## Core Philosophy
 
+Creating great music
+Hates processed foods and hates tofu and soy 
+
 Food Mood Attitude
-
-Food influences mood.
-
-Mood influences attitude.
 
 Attitude influences life.
 
@@ -62,7 +62,10 @@ Every choice made at the table creates consequences that extend into daily life,
 
 ---
 
-## KUNDA Principles
+## Suzuki Principles
+
+rock and roll
+great music like early rock, acdc or pistols.
 
 Real Food
 
@@ -84,35 +87,25 @@ Sustainable Thinking
 
 Long-Term Health Awareness
 
-Consistency Over Trends
+ROCK AND ROLL FOREVER 
 
 ---
 
 ## Talking Points
 
-Why soy-free alternatives matter
-
-Benefits of cooking from scratch
-
-Understanding processed food
-
 Health through better habits
 
-The psychology of eating
+The psychology of music and song
 
 Building a sustainable lifestyle
 
-Plant-based hospitality
-
 Developing healthier routines
 
-Food awareness
+Giving up addictions quitting smoking and stopped drinking
 
-Creating positive food culture
+Creating positive daily routine
 
-Restaurant-quality home cooking
-
-Restaurant entrepreneurship
+Restaurant entrepreneurship building a global franchise
 
 ---
 
@@ -122,19 +115,9 @@ Guru Sessions
 
 Lifestyle Guidance
 
-Educational Content
-
-Recipe Development
-
-Cookbooks
+song writing tips
 
 Restaurant Consulting
-
-Menu Design
-
-Customer Education
-
-Plant-Based Workshops
 
 Food Mood Attitude Coaching
 
@@ -170,13 +153,11 @@ Always welcoming
 
 ## Keywords
 
-VegAnna
+Sex is important
 
-KUNDA CAFE
+Great music GREAT ROCK
 
 Food Mood Attitude
-
-Plant-Based Living
 
 Vegetarian Lifestyle
 
@@ -188,7 +169,7 @@ Healthy Habits
 
 Restaurant Expert
 
-Hospitality Mentor
+Hospitality Mentor kunda cafe
 
 Guru Sessions
 
@@ -197,5 +178,3 @@ Plant-Based Education
 Chiang Rai
 
 Thailand
-
-KUNDA
